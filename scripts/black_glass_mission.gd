@@ -68,8 +68,16 @@ func try_deliver(vehicle: Node3D) -> bool:
     objective_index = 5
     if economy != null:
         economy.award_mission("BLACK GLASS", reward_cash, reward_rep)
+    var saves := get_tree().get_first_node_in_group("story_save_manager") as StorySaveManager
+    if saves != null:
+        saves.set_flag("black_glass_complete", true)
+        saves.autosave()
     _refresh_hud()
     return true
+
+func restore_objective(value: int) -> void:
+    objective_index = clamp(value, 0, objectives.size() - 1)
+    _refresh_hud()
 
 func _refresh_hud() -> void:
     if mission_label == null:
@@ -80,4 +88,4 @@ func _refresh_hud() -> void:
     elif objective_index == 2:
         mission_label.text += "\nA WITNESS IS CALLING POLICE..."
     elif objective_index == 5:
-        mission_label.text += "\n+$%d BANK   +%d REP" % [reward_cash, reward_rep]
+        mission_label.text += "\n+$%d BANK   +%d REP\nSTORY AUTOSAVED" % [reward_cash, reward_rep]
