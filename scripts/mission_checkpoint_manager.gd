@@ -26,13 +26,14 @@ const STEP_FLAG_BY_ID := {
 }
 
 var campaign: StoryCampaign
+var restarting := false
 
 func _ready() -> void:
     add_to_group("mission_checkpoint_manager")
     call_deferred("_resolve")
 
 func _unhandled_input(event: InputEvent) -> void:
-    if event.is_action_pressed("restart_mission"):
+    if event.is_action_pressed("restart_mission") and not restarting:
         restart_from_checkpoint()
 
 func restart_from_checkpoint() -> void:
@@ -43,25 +44,47 @@ func restart_from_checkpoint() -> void:
     if saves == null:
         return
 
+    restarting = true
     var mission_id := campaign.get_current_id()
     var wanted := get_tree().get_first_node_in_group("wanted_manager") as WantedManager
-    if wanted != null and wanted.state != "NONE":
-        wanted.clear_wanted()
+    if wanted != null:
+        wanted.stars = 0
+        wanted.target = null
+        wanted.last_known_position = Vector3.ZERO
+        wanted.state = "NONE"
+        wanted.state_changed.emit("NONE", 0)
 
-    saves.load_story(saves.active_slot)
+    var loaded := saves.load_story(saves.active_slot)
+    if not loaded:
+        restarting = false
+        return
 
     var mission := get_tree().get_first_node_in_group(str(GROUP_BY_ID.get(mission_id, "")))
-    if mission != null:
-        if mission_id == "black_glass":
-            mission.call("restore_objective", int(saves.get_flag("black_glass_checkpoint", mission.get("objective_index"))))
-        else:
-            var flag_name := str(STEP_FLAG_BY_ID.get(mission_id, ""))
-            if not flag_name.is_empty() and mission.has_method("restore_step"):
-                mission.call("restore_step", int(saves.get_flag(flag_name, mission.get("step"))))
+    if mission != null and mission_id != "black_glass" and mission_id != "lose_them":
+        var flag_name := str(STEP_FLAG_BY_ID.get(mission_id, ""))
+        if not flag_name.is_empty():
+            var restored_step := int(saves.get_flag(flag_name, mission.get("step")))
+            if mission.has_method("restore_step"):
+                mission.call("restore_step", restored_step)
+            else:
+                mission.set("step", restored_step)
+                if _has_property(mission, "completed"):
+                    mission.set("completed", false)
+                if _has_property(mission, "active"):
+                    mission.set("active", true)
 
     var player := get_tree().get_first_node_in_group("player") as Node3D
     if player != null and player.global_position.y < -10.0:
         player.global_position = Vector3(-49.0, 1.1, -47.0)
+
+    await get_tree().process_frame
+    restarting = false
+
+func _has_property(object: Object, property_name: String) -> bool:
+    for property in object.get_property_list():
+        if str(property.get("name")) == property_name:
+            return true
+    return false
 
 func _resolve() -> void:
     if campaign == null or not is_instance_valid(campaign):
