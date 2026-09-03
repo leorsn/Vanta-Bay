@@ -4,11 +4,11 @@ class_name StorySaveManager
 signal save_completed(slot: int)
 signal load_completed(slot: int)
 
-const SAVE_VERSION := 3
+const SAVE_VERSION := 4
 const SLOT_COUNT := 3
 
 @export var active_slot := 1
-@export var auto_resume := true
+@export var auto_resume := false
 var story_flags: Dictionary = {}
 
 func _ready() -> void:
@@ -40,7 +40,7 @@ func save_story(slot: int = active_slot) -> bool:
             "first_run_step": first_run.step if first_run != null else 0,
             "black_glass_objective": black_glass.objective_index if black_glass != null else 0
         },
-        "player_position": _vec3_to_array(player.global_position) if player != null else [-49.0, 1.1, -47.0]
+        "player_position": _vec3_to_array(player.global_position) if player != null else [0.0, 1.2, 18.0]
     }
     var file := FileAccess.open(_slot_path(slot), FileAccess.WRITE)
     if file == null:
@@ -63,6 +63,8 @@ func load_story(slot: int = active_slot) -> bool:
     file.close()
     if typeof(parsed) != TYPE_DICTIONARY:
         return false
+    if int(parsed.get("version", 0)) < SAVE_VERSION:
+        return false
 
     story_flags = parsed.get("story_flags", {})
     var economy := get_tree().get_first_node_in_group("economy_manager") as EconomyManager
@@ -84,7 +86,7 @@ func load_story(slot: int = active_slot) -> bool:
 
     var player := get_tree().get_first_node_in_group("player") as Node3D
     if player != null:
-        player.global_position = _array_to_vec3(parsed.get("player_position", [-49.0, 1.1, -47.0]))
+        player.global_position = _array_to_vec3(parsed.get("player_position", [0.0, 1.2, 18.0]))
     active_slot = slot
     load_completed.emit(slot)
     return true
