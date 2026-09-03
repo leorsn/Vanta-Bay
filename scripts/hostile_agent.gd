@@ -22,6 +22,10 @@ var _strafe_direction := 1.0
 var _strafe_timer := 0.0
 var _cover_timer := 0.0
 var _cover_point: CombatCoverPoint = null
+var _weapon_root: Node3D
+var _muzzle_flash: MeshInstance3D
+var _muzzle_light: OmniLight3D
+var _muzzle_timer := 0.0
 var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 
 func _ready() -> void:
@@ -33,11 +37,17 @@ func _ready() -> void:
     health_component.died.connect(_on_died)
     _strafe_direction = -1.0 if randf() < 0.5 else 1.0
     _strafe_timer = randf_range(1.2, 2.8)
+    _build_weapon_visual()
     call_deferred("_resolve_target")
 
 func _physics_process(delta: float) -> void:
     _fire_cooldown = max(_fire_cooldown - delta, 0.0)
     _cover_timer = max(_cover_timer - delta, 0.0)
+    _muzzle_timer = max(_muzzle_timer - delta, 0.0)
+    if _muzzle_flash != null:
+        _muzzle_flash.visible = _muzzle_timer > 0.0
+    if _muzzle_light != null:
+        _muzzle_light.visible = _muzzle_timer > 0.0
     _strafe_timer -= delta
     if _strafe_timer <= 0.0:
         _strafe_direction *= -1.0
@@ -151,6 +161,7 @@ func _try_fire(victim: Node3D) -> void:
     if _fire_cooldown > 0.0 or not victim.has_method("apply_damage"):
         return
     _fire_cooldown = fire_interval + randf_range(-0.15, 0.2)
+    _muzzle_timer = 0.06
     var distance_factor := clamp(global_position.distance_to(victim.global_position) / engagement_range, 0.0, 1.0)
     var damage := fire_damage * lerp(1.0, 0.7, distance_factor)
     victim.call("apply_damage", damage, self)
@@ -165,6 +176,52 @@ func _has_line_of_sight(victim: Node3D) -> bool:
         return true
     var collider = hit.get("collider")
     return collider == victim or (collider is Node and victim.is_ancestor_of(collider))
+
+func _build_weapon_visual() -> void:
+    _weapon_root = Node3D.new()
+    _weapon_root.name = "WeaponVisual"
+    _weapon_root.position = Vector3(0.34, 1.12, -0.18)
+    add_child(_weapon_root)
+
+    var receiver := MeshInstance3D.new()
+    var receiver_mesh := BoxMesh.new()
+    receiver_mesh.size = Vector3(0.14, 0.16, 0.48)
+    receiver.mesh = receiver_mesh
+    var weapon_material := StandardMaterial3D.new()
+    weapon_material.albedo_color = Color(0.07, 0.075, 0.08, 1.0)
+    weapon_material.metallic = 0.62
+    weapon_material.roughness = 0.32
+    receiver.material_override = weapon_material
+    _weapon_root.add_child(receiver)
+
+    var barrel := MeshInstance3D.new()
+    var barrel_mesh := BoxMesh.new()
+    barrel_mesh.size = Vector3(0.055, 0.055, 0.32)
+    barrel.mesh = barrel_mesh
+    barrel.position = Vector3(0.0, 0.01, -0.38)
+    barrel.material_override = weapon_material
+    _weapon_root.add_child(barrel)
+
+    _muzzle_flash = MeshInstance3D.new()
+    var flash_mesh := SphereMesh.new()
+    flash_mesh.radius = 0.05
+    flash_mesh.height = 0.1
+    _muzzle_flash.mesh = flash_mesh
+    var flash_material := StandardMaterial3D.new()
+    flash_material.albedo_color = Color(1.0, 0.7, 0.25, 1.0)
+    flash_material.emission_enabled = true
+    flash_material.emission = Color(1.0, 0.45, 0.08, 1.0)
+    _muzzle_flash.material_override = flash_material
+    _muzzle_flash.position = Vector3(0.0, 0.01, -0.57)
+    _muzzle_flash.visible = false
+    _weapon_root.add_child(_muzzle_flash)
+
+    _muzzle_light = OmniLight3D.new()
+    _muzzle_light.light_energy = 1.8
+    _muzzle_light.omni_range = 2.2
+    _muzzle_light.position = _muzzle_flash.position
+    _muzzle_light.visible = false
+    _weapon_root.add_child(_muzzle_light)
 
 func _on_died(_source: Node) -> void:
     _release_cover()
