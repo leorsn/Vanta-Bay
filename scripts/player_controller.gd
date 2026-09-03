@@ -18,6 +18,7 @@ const PlayerVisualScript = preload("res://scripts/player_visual.gd")
 @export var min_pitch: float = deg_to_rad(-55.0)
 @export var max_pitch: float = deg_to_rad(65.0)
 @export var normal_fov: float = 68.0
+@export var sprint_fov: float = 74.0
 @export var aim_fov: float = 54.0
 @export var fov_lerp_speed: float = 10.0
 
@@ -34,6 +35,7 @@ const PlayerVisualScript = preload("res://scripts/player_visual.gd")
 var gravity: float = float(ProjectSettings.get_setting("physics/3d/default_gravity"))
 var camera_yaw: float = 0.0
 var camera_pitch: float = deg_to_rad(-8.0)
+var camera_roll: float = 0.0
 var driving := false
 var current_vehicle: Node = null
 var nearby_vehicle: VantaVehicleController = null
@@ -121,10 +123,28 @@ func _on_died(_source: Node) -> void:
         health_component.reset_health()
 
 func _update_camera(delta: float) -> void:
-    camera_pivot.rotation = Vector3(camera_pitch, camera_yaw, 0.0)
-    var target_fov: float = aim_fov if aiming else normal_fov
+    var planar_speed := Vector2(velocity.x, velocity.z).length()
+    var sprinting := Input.is_action_pressed("sprint") and not aiming and planar_speed > walk_speed * 0.82
+    var target_fov := normal_fov
+    if aiming:
+        target_fov = aim_fov
+    elif sprinting:
+        target_fov = sprint_fov
     player_camera.fov = lerpf(player_camera.fov, target_fov, clampf(fov_lerp_speed * delta, 0.0, 1.0))
-    spring_arm.spring_length = lerpf(spring_arm.spring_length, 4.1 if aiming else 5.25, clampf(8.0 * delta, 0.0, 1.0))
+
+    var target_length := 5.25
+    if aiming:
+        target_length = 4.05
+    elif sprinting:
+        target_length = 5.55
+    spring_arm.spring_length = lerpf(spring_arm.spring_length, target_length, clampf(8.5 * delta, 0.0, 1.0))
+
+    var local_velocity := global_transform.basis.inverse() * velocity
+    var roll_target := clampf(-local_velocity.x / maxf(sprint_speed, 0.1), -1.0, 1.0) * deg_to_rad(1.55)
+    if aiming:
+        roll_target *= 0.20
+    camera_roll = lerpf(camera_roll, roll_target, clampf(delta * 6.5, 0.0, 1.0))
+    camera_pivot.rotation = Vector3(camera_pitch, camera_yaw, camera_roll)
 
 func _apply_gravity(delta: float) -> void:
     if not is_on_floor():
