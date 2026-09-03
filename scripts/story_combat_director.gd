@@ -20,9 +20,14 @@ func _bind_campaign() -> void:
         return
     if not campaign.chapter_changed.is_connected(_on_chapter_changed):
         campaign.chapter_changed.connect(_on_chapter_changed)
-    _on_chapter_changed(campaign.get_current_id(), campaign.get_current_title())
 
-func _on_chapter_changed(mission_id: String, _title: String) -> void:
+func _on_chapter_changed(_mission_id: String, _title: String) -> void:
+    _clear_hostiles()
+    spawned_for_mission = ""
+
+func begin_encounter(mission_id: String) -> void:
+    if spawned_for_mission == mission_id and not active_hostiles.is_empty():
+        return
     _clear_hostiles()
     spawned_for_mission = mission_id
     match mission_id:
