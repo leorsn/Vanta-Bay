@@ -9,6 +9,7 @@ on:
 jobs:
   validate-and-export:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: read
 
