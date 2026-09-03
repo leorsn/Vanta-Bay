@@ -15,10 +15,10 @@ func _ready() -> void:
     health_label.add_theme_font_size_override("font_size", 22)
     add_child(health_label)
     weapon_label = Label.new()
-    weapon_label.position = Vector2(1450, 965)
-    weapon_label.size = Vector2(390, 70)
+    weapon_label.position = Vector2(1390, 940)
+    weapon_label.size = Vector2(450, 100)
     weapon_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-    weapon_label.add_theme_font_size_override("font_size", 22)
+    weapon_label.add_theme_font_size_override("font_size", 21)
     add_child(weapon_label)
     call_deferred("_bind_runtime")
 
@@ -30,9 +30,9 @@ func _process(_delta: float) -> void:
         return
     health_label.text = "HEALTH  %d%%" % int(round(player.get_health_percent() * 100.0))
     if combat != null:
-        weapon_label.text = "V9 COMPACT\n%s  |  R RELOAD" % combat.get_ammo_text()
+        weapon_label.text = "%s\n%s  |  R RELOAD\n1 PISTOL   2 SMG   3 RIFLE" % [combat.get_weapon_name(), combat.get_ammo_text()]
     else:
-        weapon_label.text = "V9 COMPACT  |  LMB FIRE"
+        weapon_label.text = "LMB FIRE"
 
 func _bind_runtime() -> void:
     if player == null or not is_instance_valid(player):
