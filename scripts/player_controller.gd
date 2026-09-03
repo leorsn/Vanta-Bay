@@ -31,6 +31,7 @@ var current_vehicle: Node = null
 var nearby_vehicle: VantaVehicleController = null
 
 func _ready() -> void:
+    add_to_group("player")
     Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
     prompt.visible = false
 
