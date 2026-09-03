@@ -4,9 +4,9 @@ class_name WorldTimeManager
 signal time_changed(hour: int, minute: int)
 
 @export var real_seconds_per_game_day := 2880.0
-@export var start_hour := 20.0
+@export var start_hour := 14.5
 
-var time_hours := 20.0
+var time_hours := 14.5
 var sun: DirectionalLight3D
 var _last_minute := -1
 
