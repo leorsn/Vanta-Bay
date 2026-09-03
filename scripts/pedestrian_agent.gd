@@ -89,7 +89,44 @@ func _build_visual() -> void:
     add_child(collider)
 
     var visual := PlayerVisualScript.new() as VantaPlayerVisual
-    var scale_value: float = randf_range(0.88, 1.02)
+    var palette := _random_palette()
+    visual.configure_palette(palette[0], palette[1], palette[2], palette[3], palette[4])
+    var scale_value: float = randf_range(0.88, 1.04)
     visual.scale = Vector3(scale_value, scale_value, scale_value)
     visual.position.y = 0.16
     add_child(visual)
+
+func _random_palette() -> Array[Color]:
+    var tops: Array[Color] = [
+        Color(0.10, 0.12, 0.14, 1.0),
+        Color(0.35, 0.33, 0.29, 1.0),
+        Color(0.14, 0.22, 0.28, 1.0),
+        Color(0.42, 0.18, 0.13, 1.0),
+        Color(0.18, 0.28, 0.19, 1.0),
+        Color(0.58, 0.54, 0.45, 1.0)
+    ]
+    var trousers: Array[Color] = [
+        Color(0.06, 0.07, 0.08, 1.0),
+        Color(0.12, 0.13, 0.15, 1.0),
+        Color(0.20, 0.18, 0.16, 1.0),
+        Color(0.10, 0.15, 0.19, 1.0)
+    ]
+    var skins: Array[Color] = [
+        Color(0.79, 0.63, 0.50, 1.0),
+        Color(0.64, 0.47, 0.35, 1.0),
+        Color(0.48, 0.32, 0.23, 1.0),
+        Color(0.34, 0.22, 0.16, 1.0),
+        Color(0.86, 0.70, 0.57, 1.0)
+    ]
+    var hairs: Array[Color] = [
+        Color(0.025, 0.020, 0.018, 1.0),
+        Color(0.12, 0.065, 0.035, 1.0),
+        Color(0.34, 0.22, 0.11, 1.0),
+        Color(0.58, 0.46, 0.26, 1.0)
+    ]
+    var primary: Color = tops[randi() % tops.size()]
+    var secondary: Color = primary.lightened(randf_range(0.05, 0.16))
+    var trouser: Color = trousers[randi() % trousers.size()]
+    var skin: Color = skins[randi() % skins.size()]
+    var hair: Color = hairs[randi() % hairs.size()]
+    return [primary, secondary, trouser, skin, hair]
