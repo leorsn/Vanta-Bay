@@ -6,6 +6,7 @@ signal mission_completed()
 @export var reward_cash := 12000
 @export var reward_rep := 18
 
+var active := false
 var objective_index := 0
 var objectives := [
     "READ MATEO'S MESSAGE",
@@ -37,15 +38,30 @@ func _ready() -> void:
     if phone != null:
         phone.mateo_message_read.connect(_on_mateo_message_read)
         phone.black_glass_followup_read.connect(_on_followup_read)
+    call_deferred("_bind_campaign")
+    _refresh_hud()
+
+func _bind_campaign() -> void:
+    var campaign := get_tree().get_first_node_in_group("story_campaign") as StoryCampaign
+    if campaign == null:
+        return
+    if not campaign.chapter_changed.is_connected(_on_chapter_changed):
+        campaign.chapter_changed.connect(_on_chapter_changed)
+    _on_chapter_changed(campaign.get_current_id(), campaign.get_current_title())
+
+func _on_chapter_changed(mission_id: String, _title: String) -> void:
+    active = mission_id == "black_glass"
+    if active and objective_index >= objectives.size() - 1:
+        active = false
     _refresh_hud()
 
 func _on_mateo_message_read() -> void:
-    if objective_index == 0:
+    if active and objective_index == 0:
         objective_index = 1
-        _refresh_hud()
+        _checkpoint()
 
 func register_vehicle_theft(vehicle: Node3D) -> void:
-    if objective_index != 1:
+    if not active or objective_index != 1:
         return
     stolen_vehicle = vehicle
     objective_index = 2
@@ -54,20 +70,20 @@ func register_vehicle_theft(vehicle: Node3D) -> void:
     elif wanted != null:
         wanted.report_crime(vehicle.global_position, 3, vehicle)
         _on_report_completed()
-    _refresh_hud()
+    _checkpoint()
 
 func _on_report_completed() -> void:
-    if objective_index == 2:
+    if active and objective_index == 2:
         objective_index = 3
-        _refresh_hud()
+        _checkpoint()
 
 func _on_wanted_state_changed(state: String, _stars: int) -> void:
-    if objective_index == 3 and state == "ESCAPED":
+    if active and objective_index == 3 and state == "ESCAPED":
         objective_index = 4
-        _refresh_hud()
+        _checkpoint()
 
 func try_deliver(vehicle: Node3D) -> bool:
-    if objective_index != 4 or vehicle != stolen_vehicle:
+    if not active or objective_index != 4 or vehicle != stolen_vehicle:
         return false
     objective_index = 5
     if economy != null:
@@ -82,7 +98,7 @@ func try_deliver(vehicle: Node3D) -> bool:
     return true
 
 func _on_followup_read() -> void:
-    if objective_index != 5:
+    if not active or objective_index != 5:
         return
     objective_index = 6
     var saves := get_tree().get_first_node_in_group("story_save_manager") as StorySaveManager
@@ -94,6 +110,7 @@ func _on_followup_read() -> void:
         campaign.complete_current()
     elif saves != null:
         saves.autosave()
+    active = false
     mission_completed.emit()
     _refresh_hud()
 
@@ -103,8 +120,17 @@ func restore_objective(value: int) -> void:
         phone.show_black_glass_followup()
     _refresh_hud()
 
+func _checkpoint() -> void:
+    var saves := get_tree().get_first_node_in_group("story_save_manager") as StorySaveManager
+    if saves != null:
+        saves.autosave()
+    _refresh_hud()
+
 func _refresh_hud() -> void:
     if mission_label == null:
+        return
+    if not active and objective_index < objectives.size() - 1:
+        mission_label.text = ""
         return
     mission_label.text = "BLACK GLASS\n" + objectives[objective_index]
     if objective_index == 0:
