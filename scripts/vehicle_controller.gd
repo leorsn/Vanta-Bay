@@ -11,6 +11,7 @@ class_name VantaVehicleController
 @export var steering_rate: float = 1.65
 @export var steering_fade_speed_kph: float = 125.0
 @export var grip: float = 9.0
+@export var mission_target_vehicle := true
 
 @export_category("Interaction")
 @export var exit_offset := Vector3(-1.8, 0.4, 0.0)
@@ -24,6 +25,7 @@ var driver: VantaPlayerController
 var speed_mps := 0.0
 var steering_input := 0.0
 var throttle_input := 0.0
+var theft_registered := false
 
 func _ready() -> void:
     add_to_group("vehicles")
@@ -101,6 +103,12 @@ func enter_vehicle(player: VantaPlayerController) -> void:
     name_label.text = display_name
     _set_hud_visible(true)
     _update_hud()
+
+    if mission_target_vehicle and not theft_registered:
+        theft_registered = true
+        var mission := get_tree().get_first_node_in_group("black_glass_mission") as BlackGlassMission
+        if mission != null:
+            mission.register_vehicle_theft(self)
 
 func exit_vehicle() -> void:
     if driver == null:
