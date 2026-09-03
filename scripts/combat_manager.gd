@@ -4,6 +4,7 @@ class_name CombatManager
 signal ammo_changed(current: int, reserve: int)
 signal reloading_changed(active: bool)
 signal weapon_changed(name: String)
+signal hit_confirmed(headshot: bool)
 
 var player: VantaPlayerController
 var inventory: WeaponInventory
@@ -43,6 +44,7 @@ func fire() -> void:
     _store_ammo_state()
     _emit_ammo()
     _cooldown = float(_weapon.get("cooldown", 0.22))
+    _apply_recoil()
     var origin := camera.global_position
     var direction := -camera.global_transform.basis.z
     var end := origin + direction * float(_weapon.get("range", 85.0))
@@ -81,9 +83,10 @@ func _apply_hit(node: Node, impact_position: Vector3) -> void:
     while damage_target != null:
         if damage_target.has_method("apply_damage"):
             var base_damage := float(_weapon.get("damage", 34.0))
-            var damage := base_damage * _damage_multiplier(damage_target, impact_position)
-            damage_target.call("apply_damage", damage, player)
+            var multiplier := _damage_multiplier(damage_target, impact_position)
+            damage_target.call("apply_damage", base_damage * multiplier, player)
             _report_weapon_crime(damage_target)
+            hit_confirmed.emit(multiplier >= 1.9)
             return
         damage_target = damage_target.get_parent()
 
@@ -95,6 +98,24 @@ func _damage_multiplier(target: Node, impact_position: Vector3) -> float:
         if local_y < 0.55:
             return 0.72
     return 1.0
+
+func _apply_recoil() -> void:
+    if player == null:
+        return
+    var weapon_id := inventory.equipped_id if inventory != null else "pistol"
+    var pitch := 0.018
+    var yaw := randf_range(-0.004, 0.004)
+    match weapon_id:
+        "smg":
+            pitch = 0.011
+            yaw = randf_range(-0.007, 0.007)
+        "rifle":
+            pitch = 0.024
+            yaw = randf_range(-0.006, 0.006)
+    if player.aiming:
+        pitch *= 0.72
+        yaw *= 0.72
+    player.add_recoil(pitch, yaw)
 
 func _report_weapon_crime(target: Node) -> void:
     var wanted := get_tree().get_first_node_in_group("wanted_manager") as WantedManager
