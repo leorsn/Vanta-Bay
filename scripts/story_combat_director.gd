@@ -55,6 +55,19 @@ func begin_encounter(mission_id: String) -> void:
                 Vector3(34.0, 1.0, 35.0),
                 Vector3(31.0, 1.0, 24.0)
             ])
+        "overhead":
+            _spawn_cover_layout([
+                [Vector3(24.0, 0.6, -38.0), 0.1],
+                [Vector3(31.0, 0.6, -39.5), -0.25],
+                [Vector3(27.0, 0.6, -47.0), 0.35],
+                [Vector3(35.0, 0.6, -45.0), -0.1]
+            ])
+            _spawn_wave([
+                Vector3(20.0, 1.0, -41.0),
+                Vector3(36.0, 1.0, -38.0),
+                Vector3(21.5, 1.0, -49.0),
+                Vector3(37.0, 1.0, -48.0)
+            ])
 
 func _spawn_wave(positions: Array) -> void:
     var root := get_tree().current_scene
