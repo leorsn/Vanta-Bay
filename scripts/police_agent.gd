@@ -2,6 +2,7 @@ extends CharacterBody3D
 class_name VantaPoliceAgent
 
 const HealthComponentScript = preload("res://scripts/health_component.gd")
+const VehicleVisualScript = preload("res://scripts/vehicle_visual.gd")
 
 @export var patrol_speed := 6.0
 @export var pursuit_speed := 13.0
@@ -17,11 +18,19 @@ var wanted: WantedManager
 var search_offset := Vector3.ZERO
 var health_component: HealthComponent
 var _fire_cooldown := 0.0
+var visual_root: VantaVehicleVisual
 
 func _ready() -> void:
     add_to_group("police")
     wanted = get_tree().get_first_node_in_group("wanted_manager") as WantedManager
     search_offset = _make_search_offset(unit_index)
+    var body := get_node_or_null("Body") as MeshInstance3D
+    if body != null:
+        body.visible = false
+    visual_root = VehicleVisualScript.new() as VantaVehicleVisual
+    visual_root.police_variant = true
+    visual_root.body_color = Color(0.025, 0.04, 0.065, 1.0)
+    add_child(visual_root)
     health_component = HealthComponentScript.new()
     health_component.name = "Health"
     health_component.max_health = 120.0
