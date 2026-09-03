@@ -1,0 +1,42 @@
+name: VANTA BAY Test Build
+
+on:
+  push:
+    branches:
+      - dev/vertical-slice-foundation
+  workflow_dispatch:
+
+jobs:
+  validate-and-export:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Godot
+        uses: chickensoft-games/setup-godot@v2
+        with:
+          version: 4.3.0
+          use-dotnet: false
+          include-templates: true
+
+      - name: Verify Godot
+        run: godot --version
+
+      - name: Import and parse project
+        run: godot --headless --path . --editor --quit
+
+      - name: Export web test build
+        run: |
+          mkdir -p build/web
+          godot --headless --path . --export-release "Web Test Build" build/web/index.html
+
+      - name: Upload playable web build
+        uses: actions/upload-artifact@v4
+        with:
+          name: VANTA-BAY-Web-Test-Build
+          path: build/web
+          if-no-files-found: error
