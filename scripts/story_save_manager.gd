@@ -4,7 +4,7 @@ class_name StorySaveManager
 signal save_completed(slot: int)
 signal load_completed(slot: int)
 
-const SAVE_VERSION := 1
+const SAVE_VERSION := 2
 const SLOT_COUNT := 3
 
 @export var active_slot := 1
@@ -16,7 +16,8 @@ func _ready() -> void:
 func save_story(slot: int = active_slot) -> bool:
     slot = clamp(slot, 1, SLOT_COUNT)
     var economy := get_tree().get_first_node_in_group("economy_manager") as EconomyManager
-    var mission := get_tree().get_first_node_in_group("black_glass_mission") as BlackGlassMission
+    var black_glass := get_tree().get_first_node_in_group("black_glass_mission") as BlackGlassMission
+    var first_run := get_tree().get_first_node_in_group("first_run_mission") as FirstRunMission
     var player := get_tree().get_first_node_in_group("player") as Node3D
     var payload := {
         "version": SAVE_VERSION,
@@ -27,8 +28,11 @@ func save_story(slot: int = active_slot) -> bool:
             "bank": economy.bank if economy != null else 0,
             "rep": economy.rep if economy != null else 0
         },
-        "black_glass_objective": mission.objective_index if mission != null else 0,
-        "player_position": _vec3_to_array(player.global_position) if player != null else [0.0, 1.0, 0.0]
+        "missions": {
+            "first_run_step": first_run.step if first_run != null else 0,
+            "black_glass_objective": black_glass.objective_index if black_glass != null else 0
+        },
+        "player_position": _vec3_to_array(player.global_position) if player != null else [-49.0, 1.1, -47.0]
     }
     var file := FileAccess.open(_slot_path(slot), FileAccess.WRITE)
     if file == null:
@@ -51,6 +55,7 @@ func load_story(slot: int = active_slot) -> bool:
     file.close()
     if typeof(parsed) != TYPE_DICTIONARY:
         return false
+
     story_flags = parsed.get("story_flags", {})
     var economy := get_tree().get_first_node_in_group("economy_manager") as EconomyManager
     var econ: Dictionary = parsed.get("economy", {})
@@ -59,12 +64,19 @@ func load_story(slot: int = active_slot) -> bool:
         economy.bank = int(econ.get("bank", economy.bank))
         economy.rep = int(econ.get("rep", economy.rep))
         economy.refresh_balances()
-    var mission := get_tree().get_first_node_in_group("black_glass_mission") as BlackGlassMission
-    if mission != null:
-        mission.restore_objective(int(parsed.get("black_glass_objective", 0)))
+
+    var missions: Dictionary = parsed.get("missions", {})
+    var legacy_black_glass := int(parsed.get("black_glass_objective", 0))
+    var first_run := get_tree().get_first_node_in_group("first_run_mission") as FirstRunMission
+    if first_run != null:
+        first_run.restore_step(int(missions.get("first_run_step", 0)))
+    var black_glass := get_tree().get_first_node_in_group("black_glass_mission") as BlackGlassMission
+    if black_glass != null:
+        black_glass.restore_objective(int(missions.get("black_glass_objective", legacy_black_glass)))
+
     var player := get_tree().get_first_node_in_group("player") as Node3D
     if player != null:
-        player.global_position = _array_to_vec3(parsed.get("player_position", [0.0, 1.0, 0.0]))
+        player.global_position = _array_to_vec3(parsed.get("player_position", [-49.0, 1.1, -47.0]))
     active_slot = slot
     load_completed.emit(slot)
     return true
@@ -77,6 +89,9 @@ func set_flag(key: String, value = true) -> void:
 
 func get_flag(key: String, fallback = false):
     return story_flags.get(key, fallback)
+
+func has_story_save(slot: int = active_slot) -> bool:
+    return FileAccess.file_exists(_slot_path(clamp(slot, 1, SLOT_COUNT)))
 
 func _slot_path(slot: int) -> String:
     return "user://story_slot_%d.json" % slot
