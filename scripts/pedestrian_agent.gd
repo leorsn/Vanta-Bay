@@ -2,6 +2,7 @@ extends CharacterBody3D
 class_name VantaPedestrianAgent
 
 const HealthComponentScript = preload("res://scripts/health_component.gd")
+const PlayerVisualScript = preload("res://scripts/player_visual.gd")
 
 @export var walk_speed: float = 1.55
 @export var roam_radius: float = 11.0
@@ -11,7 +12,7 @@ const HealthComponentScript = preload("res://scripts/health_component.gd")
 var origin := Vector3.ZERO
 var target := Vector3.ZERO
 var pause_timer := 0.0
-var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
+var gravity: float = float(ProjectSettings.get_setting("physics/3d/default_gravity"))
 var health_component: HealthComponent
 
 func _ready() -> void:
@@ -60,7 +61,7 @@ func apply_damage(amount: float, source: Node = null) -> void:
             flee_from((source as Node3D).global_position)
 
 func flee_from(world_position: Vector3) -> void:
-    var away := (global_position - world_position)
+    var away := global_position - world_position
     away.y = 0.0
     if away.length_squared() < 0.01:
         away = Vector3.FORWARD
@@ -84,15 +85,11 @@ func _build_visual() -> void:
     shape.radius = 0.34
     shape.height = 1.72
     collider.shape = shape
+    collider.position.y = 0.72
     add_child(collider)
 
-    var mesh_instance := MeshInstance3D.new()
-    var mesh := CapsuleMesh.new()
-    mesh.radius = 0.34
-    mesh.height = 1.72
-    mesh_instance.mesh = mesh
-    var material := StandardMaterial3D.new()
-    material.albedo_color = Color(randf_range(0.18, 0.72), randf_range(0.18, 0.72), randf_range(0.18, 0.72), 1.0)
-    material.roughness = 0.8
-    mesh_instance.material_override = material
-    add_child(mesh_instance)
+    var visual := PlayerVisualScript.new() as VantaPlayerVisual
+    var scale_value: float = randf_range(0.88, 1.02)
+    visual.scale = Vector3(scale_value, scale_value, scale_value)
+    visual.position.y = 0.16
+    add_child(visual)
