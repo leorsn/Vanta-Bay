@@ -11,6 +11,8 @@ const TheIntroductionMissionScript = preload("res://scripts/the_introduction_mis
 const TermsConditionsMissionScript = preload("res://scripts/terms_conditions_mission.gd")
 const OverheadMissionScript = preload("res://scripts/overhead_mission.gd")
 const WorldClockScript = preload("res://scripts/world_clock.gd")
+const StoryHUDScript = preload("res://scripts/story_hud.gd")
+const MissionCheckpointManagerScript = preload("res://scripts/mission_checkpoint_manager.gd")
 
 func _ready() -> void:
     get_tree().node_added.connect(_on_node_added)
@@ -67,3 +69,11 @@ func _ensure_story_runtime() -> void:
         var overhead := OverheadMissionScript.new()
         overhead.name = "OverheadMission"
         root.add_child(overhead)
+    if get_tree().get_first_node_in_group("story_hud") == null:
+        var hud := StoryHUDScript.new()
+        hud.name = "StoryHUD"
+        root.add_child(hud)
+    if get_tree().get_first_node_in_group("mission_checkpoint_manager") == null:
+        var checkpoints := MissionCheckpointManagerScript.new()
+        checkpoints.name = "MissionCheckpointManager"
+        root.add_child(checkpoints)
