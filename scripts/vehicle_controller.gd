@@ -31,11 +31,13 @@ var repaint_complete := false
 var plates_changed := false
 var identity_heat_cleared := false
 var plate_code := "VB 271"
+var plate_label: Label3D
 
 func _ready() -> void:
     add_to_group("vehicles")
     camera.current = false
     _set_hud_visible(false)
+    _build_plate_visual()
 
 func _physics_process(delta: float) -> void:
     if driver == null:
@@ -138,6 +140,7 @@ func repaint_vehicle() -> void:
 func change_plates() -> void:
     plates_changed = true
     plate_code = "VB 904"
+    _update_plate_visual()
 
 func clear_identity_heat() -> void:
     identity_heat_cleared = repaint_complete and plates_changed
@@ -150,6 +153,24 @@ func is_identity_clean() -> bool:
 
 func get_speed_kph() -> float:
     return abs(speed_mps) * 3.6
+
+func _build_plate_visual() -> void:
+    if plate_label != null:
+        return
+    plate_label = Label3D.new()
+    plate_label.name = "RearPlate"
+    plate_label.position = Vector3(0.0, 0.15, 2.23)
+    plate_label.rotation_degrees = Vector3(0.0, 180.0, 0.0)
+    plate_label.font_size = 22
+    plate_label.outline_size = 5
+    plate_label.modulate = Color(0.95, 0.95, 0.90, 1.0)
+    plate_label.no_depth_test = false
+    add_child(plate_label)
+    _update_plate_visual()
+
+func _update_plate_visual() -> void:
+    if plate_label != null:
+        plate_label.text = plate_code
 
 func _set_hud_visible(value: bool) -> void:
     speed_label.visible = value
