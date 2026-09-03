@@ -6,25 +6,30 @@ class_name VantaPoliceAgent
 @export var turn_speed := 3.4
 @export var sight_distance := 34.0
 @export var stop_distance := 3.5
+@export var unit_index := 0
 
 var wanted: WantedManager
+var search_offset := Vector3.ZERO
 
 func _ready() -> void:
     add_to_group("police")
     wanted = get_tree().get_first_node_in_group("wanted_manager") as WantedManager
+    search_offset = _make_search_offset(unit_index)
 
 func _physics_process(delta: float) -> void:
-    if wanted == null or wanted.state == "NONE" or wanted.state == "ESCAPED":
+    if wanted == null or wanted.state == "NONE" or wanted.state == "ESCAPED" or not _is_unit_active():
         velocity = velocity.move_toward(Vector3.ZERO, patrol_speed * delta)
         move_and_slide()
         return
 
-    var destination := wanted.get_search_position()
+    var destination := wanted.get_search_position() + search_offset
     var target := wanted.target
     if wanted.state == "PURSUIT" and target != null and is_instance_valid(target):
-        destination = target.global_position
-        if global_position.distance_to(target.global_position) <= sight_distance:
+        if _has_line_of_sight(target):
+            destination = target.global_position
             wanted.confirm_sighting(target.global_position, target)
+        else:
+            destination = wanted.get_search_position() + search_offset
 
     var flat := destination - global_position
     flat.y = 0.0
@@ -44,3 +49,36 @@ func _physics_process(delta: float) -> void:
     else:
         velocity.y = -0.2
     move_and_slide()
+
+func _is_unit_active() -> bool:
+    if wanted == null:
+        return false
+    var required_units := 1
+    if wanted.stars >= 2:
+        required_units = 2
+    if wanted.stars >= 3:
+        required_units = 3
+    return unit_index < required_units
+
+func _has_line_of_sight(target: Node3D) -> bool:
+    var origin := global_position + Vector3.UP * 1.2
+    var target_point := target.global_position + Vector3.UP * 1.0
+    if origin.distance_to(target_point) > sight_distance:
+        return false
+    var query := PhysicsRayQueryParameters3D.create(origin, target_point)
+    query.exclude = [self]
+    var hit := get_world_3d().direct_space_state.intersect_ray(query)
+    if hit.is_empty():
+        return true
+    var collider = hit.get("collider")
+    return collider == target or (collider is Node and target.is_ancestor_of(collider))
+
+func _make_search_offset(index: int) -> Vector3:
+    var offsets := [
+        Vector3.ZERO,
+        Vector3(12.0, 0.0, 8.0),
+        Vector3(-11.0, 0.0, 10.0),
+        Vector3(8.0, 0.0, -13.0),
+        Vector3(-14.0, 0.0, -7.0)
+    ]
+    return offsets[index % offsets.size()]
