@@ -29,6 +29,7 @@ const CityDetailControllerScript = preload("res://scripts/city_detail_controller
 const EnvironmentDetailControllerScript = preload("res://scripts/environment_detail_controller.gd")
 const VehicleLightingControllerScript = preload("res://scripts/vehicle_lighting_controller.gd")
 const AmbientLifeControllerScript = preload("res://scripts/ambient_life_controller.gd")
+const FacadeWindowControllerScript = preload("res://scripts/facade_window_controller.gd")
 
 func _ready() -> void:
     get_tree().node_added.connect(_on_node_added)
@@ -158,3 +159,7 @@ func _ensure_story_runtime() -> void:
         var ambient_life := AmbientLifeControllerScript.new()
         ambient_life.name = "AmbientLifeController"
         root.add_child(ambient_life)
+    if get_tree().get_first_node_in_group("facade_window_controller") == null:
+        var facade_windows := FacadeWindowControllerScript.new()
+        facade_windows.name = "FacadeWindowController"
+        root.add_child(facade_windows)
