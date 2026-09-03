@@ -203,6 +203,7 @@ horizontal_alignment = 1
 [node name="PoliceCruiserA" type="CharacterBody3D" parent="."]
 position = Vector3(-5, 0.75, -42)
 script = ExtResource("5_police")
+unit_index = 0
 [node name="CollisionShape3D" type="CollisionShape3D" parent="PoliceCruiserA"]
 shape = SubResource("PoliceShape")
 [node name="Body" type="MeshInstance3D" parent="PoliceCruiserA"]
@@ -211,6 +212,7 @@ material_override = SubResource("PoliceMaterial")
 [node name="PoliceCruiserB" type="CharacterBody3D" parent="."]
 position = Vector3(7, 0.75, 44)
 script = ExtResource("5_police")
+unit_index = 1
 [node name="CollisionShape3D" type="CollisionShape3D" parent="PoliceCruiserB"]
 shape = SubResource("PoliceShape")
 [node name="Body" type="MeshInstance3D" parent="PoliceCruiserB"]
@@ -219,6 +221,7 @@ material_override = SubResource("PoliceMaterial")
 [node name="PoliceCruiserC" type="CharacterBody3D" parent="."]
 position = Vector3(-38, 0.75, -24)
 script = ExtResource("5_police")
+unit_index = 2
 [node name="CollisionShape3D" type="CollisionShape3D" parent="PoliceCruiserC"]
 shape = SubResource("PoliceShape")
 [node name="Body" type="MeshInstance3D" parent="PoliceCruiserC"]
