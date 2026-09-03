@@ -1,6 +1,8 @@
 extends Node
 class_name BlackGlassMission
 
+signal mission_completed()
+
 @export var reward_cash := 12000
 @export var reward_rep := 18
 
@@ -11,6 +13,7 @@ var objectives := [
     "WITNESS REPORTING",
     "LOSE THE POLICE",
     "DELIVER THE VEHICLE TO THE WORKSHOP",
+    "CHECK THE ENCRYPTED DEVICE",
     "MISSION COMPLETE"
 ]
 var stolen_vehicle: Node3D
@@ -33,6 +36,7 @@ func _ready() -> void:
         crime_reporter.report_completed.connect(_on_report_completed)
     if phone != null:
         phone.mateo_message_read.connect(_on_mateo_message_read)
+        phone.black_glass_followup_read.connect(_on_followup_read)
     _refresh_hud()
 
 func _on_mateo_message_read() -> void:
@@ -68,15 +72,31 @@ func try_deliver(vehicle: Node3D) -> bool:
     objective_index = 5
     if economy != null:
         economy.award_mission("BLACK GLASS", reward_cash, reward_rep)
+    if phone != null:
+        phone.show_black_glass_followup()
     var saves := get_tree().get_first_node_in_group("story_save_manager") as StorySaveManager
     if saves != null:
-        saves.set_flag("black_glass_complete", true)
+        saves.set_flag("black_glass_storage_device_found", true)
         saves.autosave()
     _refresh_hud()
     return true
 
+func _on_followup_read() -> void:
+    if objective_index != 5:
+        return
+    objective_index = 6
+    var saves := get_tree().get_first_node_in_group("story_save_manager") as StorySaveManager
+    if saves != null:
+        saves.set_flag("black_glass_complete", true)
+        saves.set_flag("network_thread_started", true)
+        saves.autosave()
+    mission_completed.emit()
+    _refresh_hud()
+
 func restore_objective(value: int) -> void:
     objective_index = clamp(value, 0, objectives.size() - 1)
+    if phone != null and objective_index == 5:
+        phone.show_black_glass_followup()
     _refresh_hud()
 
 func _refresh_hud() -> void:
@@ -88,4 +108,6 @@ func _refresh_hud() -> void:
     elif objective_index == 2:
         mission_label.text += "\nA WITNESS IS CALLING POLICE..."
     elif objective_index == 5:
+        mission_label.text += "\nPRESS P TO READ THE SECURE MESSAGE"
+    elif objective_index == 6:
         mission_label.text += "\n+$%d BANK   +%d REP\nSTORY AUTOSAVED" % [reward_cash, reward_rep]
