@@ -106,6 +106,9 @@ func _get_target() -> Dictionary:
             if step == 0:
                 return _target(terms.get("finance_tower_position"), "VALE LEGAL")
             if step == 1:
+                var branch := str(terms.get("branch"))
+                if branch == "trusted":
+                    return _target(terms.get("private_handoff_position"), "ADRIAN PRIVATE HANDOFF")
                 return _target(terms.get("contract_drop_position"), "SIGNED PACKAGE DROP")
         "overhead":
             var overhead = get_tree().get_first_node_in_group("overhead_mission")
