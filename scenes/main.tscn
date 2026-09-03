@@ -1,25 +1,46 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource path="res://scripts/player_controller.gd" type="Script" id="1_player"]
+[ext_resource path="res://scripts/vehicle_controller.gd" type="Script" id="2_vehicle"]
 
 [sub_resource type="CapsuleShape3D" id="PlayerShape"]
 radius = 0.42
 height = 1.8
 
+[sub_resource type="CapsuleMesh" id="PlayerMesh"]
+radius = 0.42
+height = 1.8
+
 [sub_resource type="BoxShape3D" id="GroundShape"]
-size = Vector3(80, 1, 80)
+size = Vector3(120, 1, 120)
+
+[sub_resource type="BoxMesh" id="GroundMesh"]
+size = Vector3(120, 1, 120)
 
 [sub_resource type="StandardMaterial3D" id="GroundMaterial"]
-albedo_color = Color(0.08, 0.09, 0.1, 1)
-roughness = 0.82
+albedo_color = Color(0.075, 0.085, 0.095, 1)
+roughness = 0.88
+
+[sub_resource type="BoxShape3D" id="VehicleShape"]
+size = Vector3(1.9, 1.25, 4.4)
+
+[sub_resource type="BoxMesh" id="VehicleMesh"]
+size = Vector3(1.9, 1.25, 4.4)
+
+[sub_resource type="StandardMaterial3D" id="VehicleMaterial"]
+albedo_color = Color(0.42, 0.44, 0.47, 1)
+metallic = 0.8
+roughness = 0.2
+
+[sub_resource type="StandardMaterial3D" id="PlayerMaterial"]
+albedo_color = Color(0.86, 0.86, 0.84, 1)
+roughness = 0.65
 
 [node name="VantaBay" type="Node3D"]
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-
 [node name="Sun" type="DirectionalLight3D" parent="."]
 rotation_degrees = Vector3(-48, -32, 0)
-light_energy = 1.1
+light_energy = 1.25
 shadow_enabled = true
 
 [node name="Ground" type="StaticBody3D" parent="."]
@@ -29,17 +50,20 @@ position = Vector3(0, -0.5, 0)
 shape = SubResource("GroundShape")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Ground"]
-mesh = null
+position = Vector3(0, -0.5, 0)
+mesh = SubResource("GroundMesh")
+material_override = SubResource("GroundMaterial")
 
 [node name="Player" type="CharacterBody3D" parent="."]
-position = Vector3(0, 1.1, 0)
+position = Vector3(0, 1.1, 4)
 script = ExtResource("1_player")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Player"]
 shape = SubResource("PlayerShape")
 
 [node name="Body" type="MeshInstance3D" parent="Player"]
-mesh = null
+mesh = SubResource("PlayerMesh")
+material_override = SubResource("PlayerMaterial")
 
 [node name="CameraPivot" type="Node3D" parent="Player"]
 position = Vector3(0, 1.55, 0)
@@ -51,3 +75,64 @@ margin = 0.15
 [node name="Camera3D" type="Camera3D" parent="Player/CameraPivot/SpringArm3D"]
 current = true
 fov = 70.0
+
+[node name="PlayerHUD" type="CanvasLayer" parent="Player"]
+
+[node name="InteractionPrompt" type="Label" parent="Player/PlayerHUD"]
+offset_left = 760.0
+offset_top = 930.0
+offset_right = 1160.0
+offset_bottom = 980.0
+theme_override_font_sizes/font_size = 24
+text = "E  DRIVE"
+horizontal_alignment = 1
+
+[node name="PrototypeVehicle" type="CharacterBody3D" parent="."]
+position = Vector3(4, 0.72, 0)
+script = ExtResource("2_vehicle")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="PrototypeVehicle"]
+shape = SubResource("VehicleShape")
+
+[node name="Body" type="MeshInstance3D" parent="PrototypeVehicle"]
+mesh = SubResource("VehicleMesh")
+material_override = SubResource("VehicleMaterial")
+
+[node name="CameraRig" type="Node3D" parent="PrototypeVehicle"]
+position = Vector3(0, 1.65, 0)
+rotation_degrees = Vector3(-7, 0, 0)
+
+[node name="SpringArm3D" type="SpringArm3D" parent="PrototypeVehicle/CameraRig"]
+spring_length = 6.5
+margin = 0.2
+
+[node name="Camera3D" type="Camera3D" parent="PrototypeVehicle/CameraRig/SpringArm3D"]
+fov = 72.0
+
+[node name="VehicleHUD" type="CanvasLayer" parent="PrototypeVehicle"]
+
+[node name="VehicleName" type="Label" parent="PrototypeVehicle/VehicleHUD"]
+offset_left = 60.0
+offset_top = 60.0
+offset_right = 520.0
+offset_bottom = 100.0
+theme_override_font_sizes/font_size = 22
+text = "Vellaro S1 Prototype"
+
+[node name="Speed" type="Label" parent="PrototypeVehicle/VehicleHUD"]
+offset_left = 1510.0
+offset_top = 900.0
+offset_right = 1840.0
+offset_bottom = 980.0
+theme_override_font_sizes/font_size = 38
+text = "000 km/h"
+horizontal_alignment = 2
+
+[node name="Interaction" type="Label" parent="PrototypeVehicle/VehicleHUD"]
+offset_left = 760.0
+offset_top = 930.0
+offset_right = 1160.0
+offset_bottom = 980.0
+theme_override_font_sizes/font_size = 22
+text = "E  EXIT VEHICLE"
+horizontal_alignment = 1
