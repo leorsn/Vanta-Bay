@@ -1,6 +1,9 @@
 extends Node
 class_name StoryCombatDirector
 
+signal encounter_started(mission_id: String, enemy_count: int)
+signal encounter_cleared(mission_id: String)
+
 const HostileAgentScript = preload("res://scripts/hostile_agent.gd")
 
 var campaign: StoryCampaign
@@ -44,7 +47,22 @@ func _spawn_wave(positions: Array) -> void:
         hostile.name = "StoryHostile"
         hostile.global_position = spawn_position
         root.add_child(hostile)
+        hostile.defeated.connect(_on_hostile_defeated)
         active_hostiles.append(hostile)
+    if not active_hostiles.is_empty():
+        encounter_started.emit(spawned_for_mission, active_hostiles.size())
+
+func _on_hostile_defeated(agent: Node) -> void:
+    active_hostiles.erase(agent)
+    if active_hostiles.is_empty() and not spawned_for_mission.is_empty():
+        encounter_cleared.emit(spawned_for_mission)
+
+func get_remaining_hostiles() -> int:
+    var alive := 0
+    for hostile in active_hostiles:
+        if is_instance_valid(hostile) and hostile.visible:
+            alive += 1
+    return alive
 
 func _clear_hostiles() -> void:
     for hostile in active_hostiles:
