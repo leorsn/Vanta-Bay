@@ -26,7 +26,7 @@ var _weapon_root: Node3D
 var _muzzle_flash: MeshInstance3D
 var _muzzle_light: OmniLight3D
 var _muzzle_timer := 0.0
-var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
+var gravity: float = float(ProjectSettings.get_setting("physics/3d/default_gravity"))
 
 func _ready() -> void:
     add_to_group("hostiles")
@@ -41,9 +41,9 @@ func _ready() -> void:
     call_deferred("_resolve_target")
 
 func _physics_process(delta: float) -> void:
-    _fire_cooldown = max(_fire_cooldown - delta, 0.0)
-    _cover_timer = max(_cover_timer - delta, 0.0)
-    _muzzle_timer = max(_muzzle_timer - delta, 0.0)
+    _fire_cooldown = maxf(_fire_cooldown - delta, 0.0)
+    _cover_timer = maxf(_cover_timer - delta, 0.0)
+    _muzzle_timer = maxf(_muzzle_timer - delta, 0.0)
     if _muzzle_flash != null:
         _muzzle_flash.visible = _muzzle_timer > 0.0
     if _muzzle_light != null:
@@ -64,16 +64,16 @@ func _physics_process(delta: float) -> void:
     if _cover_point != null and not is_instance_valid(_cover_point):
         _cover_point = null
 
-    var flat := target.global_position - global_position
+    var flat: Vector3 = target.global_position - global_position
     flat.y = 0.0
-    var distance := flat.length()
-    var has_los := distance <= engagement_range and _has_line_of_sight(target)
+    var distance: float = flat.length()
+    var has_los: bool = distance <= engagement_range and _has_line_of_sight(target)
     if has_los:
         _try_fire(target)
 
     var desired := Vector3.ZERO
     if _cover_point != null and _cover_timer > 0.0:
-        var cover_flat := _cover_point.global_position - global_position
+        var cover_flat: Vector3 = _cover_point.global_position - global_position
         cover_flat.y = 0.0
         if cover_flat.length() > 0.8:
             desired = cover_flat.normalized() * move_speed
@@ -83,8 +83,8 @@ func _physics_process(delta: float) -> void:
                 desired = _peek_direction(flat) * strafe_speed * 0.45
     else:
         _release_cover()
-        var forward := flat.normalized() if flat.length_squared() > 0.01 else Vector3.FORWARD
-        var lateral := Vector3(-forward.z, 0.0, forward.x) * _strafe_direction
+        var forward: Vector3 = flat.normalized() if flat.length_squared() > 0.01 else Vector3.FORWARD
+        var lateral: Vector3 = Vector3(-forward.z, 0.0, forward.x) * _strafe_direction
         if not has_los:
             desired = (forward + lateral * 0.65).normalized() * move_speed
         elif distance > preferred_range + 3.0:
@@ -97,7 +97,7 @@ func _physics_process(delta: float) -> void:
     velocity.x = move_toward(velocity.x, desired.x, 10.0 * delta)
     velocity.z = move_toward(velocity.z, desired.z, 10.0 * delta)
     if flat.length_squared() > 0.01:
-        var forward_to_target := flat.normalized()
+        var forward_to_target: Vector3 = flat.normalized()
         rotation.y = lerp_angle(rotation.y, atan2(forward_to_target.x, forward_to_target.z), 7.5 * delta)
     if not is_on_floor():
         velocity.y -= gravity * delta
@@ -113,17 +113,17 @@ func apply_damage(amount: float, source: Node = null) -> void:
 
 func _seek_cover() -> void:
     var best: CombatCoverPoint = null
-    var best_score := INF
+    var best_score: float = INF
     for node in get_tree().get_nodes_in_group("combat_cover"):
         if node is CombatCoverPoint:
             var point := node as CombatCoverPoint
             if not point.is_available_for(self):
                 continue
-            var distance := global_position.distance_to(point.global_position)
-            if distance > 18.0:
+            var point_distance: float = global_position.distance_to(point.global_position)
+            if point_distance > 18.0:
                 continue
-            var hidden_bonus := -8.0 if _point_blocks_target(point.global_position) else 0.0
-            var score := distance + hidden_bonus
+            var hidden_bonus: float = -8.0 if _point_blocks_target(point.global_position) else 0.0
+            var score: float = point_distance + hidden_bonus
             if score < best_score:
                 best_score = score
                 best = point
@@ -162,8 +162,8 @@ func _try_fire(victim: Node3D) -> void:
         return
     _fire_cooldown = fire_interval + randf_range(-0.15, 0.2)
     _muzzle_timer = 0.06
-    var distance_factor := clamp(global_position.distance_to(victim.global_position) / engagement_range, 0.0, 1.0)
-    var damage := fire_damage * lerp(1.0, 0.7, distance_factor)
+    var distance_factor: float = clampf(global_position.distance_to(victim.global_position) / engagement_range, 0.0, 1.0)
+    var damage: float = fire_damage * lerpf(1.0, 0.7, distance_factor)
     victim.call("apply_damage", damage, self)
 
 func _has_line_of_sight(victim: Node3D) -> bool:
