@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3]
+[gd_scene load_steps=22 format=3]
 
 [ext_resource path="res://scripts/player_controller.gd" type="Script" id="1_player"]
 [ext_resource path="res://scripts/vehicle_controller.gd" type="Script" id="2_vehicle"]
@@ -10,6 +10,7 @@
 [ext_resource path="res://scripts/wanted_hud.gd" type="Script" id="8_wantedhud"]
 [ext_resource path="res://scripts/economy_manager.gd" type="Script" id="9_economy"]
 [ext_resource path="res://scripts/phone_controller.gd" type="Script" id="10_phone"]
+[ext_resource path="res://scripts/crime_reporter.gd" type="Script" id="11_crime"]
 
 [sub_resource type="CapsuleShape3D" id="PlayerShape"]
 radius = 0.42
@@ -67,6 +68,9 @@ script = ExtResource("9_economy")
 [node name="WantedManager" type="Node" parent="."]
 script = ExtResource("4_wanted")
 
+[node name="CrimeReporter" type="Node" parent="."]
+script = ExtResource("11_crime")
+
 [node name="BlackGlassMission" type="Node" parent="."]
 script = ExtResource("6_mission")
 
@@ -76,7 +80,7 @@ script = ExtResource("6_mission")
 offset_left = 56.0
 offset_top = 58.0
 offset_right = 700.0
-offset_bottom = 150.0
+offset_bottom = 170.0
 theme_override_font_sizes/font_size = 24
 text = "BLACK GLASS\nSTEAL THE VEHICLE"
 
@@ -231,14 +235,36 @@ theme_override_font_sizes/font_size = 22
 text = "E  EXIT VEHICLE"
 horizontal_alignment = 1
 
-[node name="PoliceCruiser" type="CharacterBody3D" parent="."]
+[node name="PoliceCruiserA" type="CharacterBody3D" parent="."]
 position = Vector3(-5, 0.75, -42)
 script = ExtResource("5_police")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="PoliceCruiser"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="PoliceCruiserA"]
 shape = SubResource("PoliceShape")
 
-[node name="Body" type="MeshInstance3D" parent="PoliceCruiser"]
+[node name="Body" type="MeshInstance3D" parent="PoliceCruiserA"]
+mesh = SubResource("PoliceMesh")
+material_override = SubResource("PoliceMaterial")
+
+[node name="PoliceCruiserB" type="CharacterBody3D" parent="."]
+position = Vector3(7, 0.75, 44)
+script = ExtResource("5_police")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="PoliceCruiserB"]
+shape = SubResource("PoliceShape")
+
+[node name="Body" type="MeshInstance3D" parent="PoliceCruiserB"]
+mesh = SubResource("PoliceMesh")
+material_override = SubResource("PoliceMaterial")
+
+[node name="PoliceCruiserC" type="CharacterBody3D" parent="."]
+position = Vector3(-38, 0.75, -24)
+script = ExtResource("5_police")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="PoliceCruiserC"]
+shape = SubResource("PoliceShape")
+
+[node name="Body" type="MeshInstance3D" parent="PoliceCruiserC"]
 mesh = SubResource("PoliceMesh")
 material_override = SubResource("PoliceMaterial")
 
