@@ -1,6 +1,8 @@
 extends CharacterBody3D
 class_name VantaHostileAgent
 
+signal defeated(agent: Node)
+
 const HealthComponentScript = preload("res://scripts/health_component.gd")
 
 @export var move_speed := 4.6
@@ -34,7 +36,6 @@ func _physics_process(delta: float) -> void:
         velocity = velocity.move_toward(Vector3.ZERO, move_speed * delta)
         move_and_slide()
         return
-
     var flat := target.global_position - global_position
     flat.y = 0.0
     var distance := flat.length()
@@ -82,6 +83,7 @@ func _on_died(_source: Node) -> void:
     collision_layer = 0
     collision_mask = 0
     visible = false
+    defeated.emit(self)
 
 func _resolve_target() -> void:
     if target == null or not is_instance_valid(target):
