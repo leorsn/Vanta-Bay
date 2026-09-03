@@ -13,6 +13,7 @@ const OverheadMissionScript = preload("res://scripts/overhead_mission.gd")
 const WorldClockScript = preload("res://scripts/world_clock.gd")
 const StoryHUDScript = preload("res://scripts/story_hud.gd")
 const MissionCheckpointManagerScript = preload("res://scripts/mission_checkpoint_manager.gd")
+const WeaponInventoryScript = preload("res://scripts/weapon_inventory.gd")
 const CombatManagerScript = preload("res://scripts/combat_manager.gd")
 const CombatHUDScript = preload("res://scripts/combat_hud.gd")
 const StoryCombatDirectorScript = preload("res://scripts/story_combat_director.gd")
@@ -80,6 +81,10 @@ func _ensure_story_runtime() -> void:
         var checkpoints := MissionCheckpointManagerScript.new()
         checkpoints.name = "MissionCheckpointManager"
         root.add_child(checkpoints)
+    if get_tree().get_first_node_in_group("weapon_inventory") == null:
+        var inventory := WeaponInventoryScript.new()
+        inventory.name = "WeaponInventory"
+        root.add_child(inventory)
     if get_tree().get_first_node_in_group("combat_manager") == null:
         var combat := CombatManagerScript.new()
         combat.name = "CombatManager"
