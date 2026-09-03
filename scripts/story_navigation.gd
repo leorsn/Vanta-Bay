@@ -9,12 +9,10 @@ var garage_marker: Node3D
 var workshop_marker: Node3D
 
 func _ready() -> void:
-    mission = get_tree().get_first_node_in_group("black_glass_mission") as BlackGlassMission
-    player = get_tree().get_first_node_in_group("player") as Node3D
-    garage_marker = get_tree().get_first_node_in_group("black_glass_garage") as Node3D
-    workshop_marker = get_tree().get_first_node_in_group("workshop_delivery") as Node3D
+    _resolve_nodes()
 
 func _process(_delta: float) -> void:
+    _resolve_nodes()
     if mission == null or player == null:
         label.text = ""
         return
@@ -38,6 +36,16 @@ func _process(_delta: float) -> void:
     var heading := atan2(flat.x, flat.z) - player.global_rotation.y
     var arrow := _arrow_for_angle(heading)
     label.text = "%s  %s  %dm" % [arrow, target_name, int(distance)]
+
+func _resolve_nodes() -> void:
+    if mission == null or not is_instance_valid(mission):
+        mission = get_tree().get_first_node_in_group("black_glass_mission") as BlackGlassMission
+    if player == null or not is_instance_valid(player):
+        player = get_tree().get_first_node_in_group("player") as Node3D
+    if garage_marker == null or not is_instance_valid(garage_marker):
+        garage_marker = get_tree().get_first_node_in_group("black_glass_garage") as Node3D
+    if workshop_marker == null or not is_instance_valid(workshop_marker):
+        workshop_marker = get_tree().get_first_node_in_group("workshop_delivery") as Node3D
 
 func _arrow_for_angle(angle: float) -> String:
     angle = wrapf(angle, -PI, PI)
