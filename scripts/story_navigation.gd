@@ -85,10 +85,10 @@ func _get_target() -> Dictionary:
             if clean_slate == null:
                 return {}
             var step := int(clean_slate.get("step"))
-            if step == 0:
-                return _target(clean_slate.get("safehouse_position"), "JACE'S APARTMENT")
-            if step == 1:
-                return _target(clean_slate.get("burner_drop_position"), "BURNER DROP")
+            if step <= 2:
+                return _target(clean_slate.get("workshop_position"), "PORT VANTA WORKSHOP")
+            if step == 3:
+                return _target(clean_slate.get("exit_position"), "WORKSHOP EXIT")
         "the_introduction":
             var introduction = get_tree().get_first_node_in_group("the_introduction_mission")
             if introduction == null:
