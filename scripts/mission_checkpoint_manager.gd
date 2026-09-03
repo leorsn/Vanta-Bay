@@ -27,10 +27,28 @@ const STEP_FLAG_BY_ID := {
 
 var campaign: StoryCampaign
 var restarting := false
+var fail_cooldown := 0.0
 
 func _ready() -> void:
     add_to_group("mission_checkpoint_manager")
     call_deferred("_resolve")
+
+func _process(delta: float) -> void:
+    fail_cooldown = max(fail_cooldown - delta, 0.0)
+    if restarting or fail_cooldown > 0.0:
+        return
+    _resolve()
+    var player := get_tree().get_first_node_in_group("player") as Node3D
+    if player != null and player.global_position.y < -20.0:
+        fail_cooldown = 2.0
+        restart_from_checkpoint()
+        return
+    if campaign != null and campaign.get_current_id() == "black_glass":
+        var black_glass := get_tree().get_first_node_in_group("black_glass_mission") as BlackGlassMission
+        if black_glass != null and black_glass.stolen_vehicle != null and is_instance_valid(black_glass.stolen_vehicle):
+            if black_glass.stolen_vehicle.global_position.y < -10.0:
+                fail_cooldown = 2.0
+                restart_from_checkpoint()
 
 func _unhandled_input(event: InputEvent) -> void:
     if event.is_action_pressed("restart_mission") and not restarting:
@@ -78,6 +96,7 @@ func restart_from_checkpoint() -> void:
         player.global_position = Vector3(-49.0, 1.1, -47.0)
 
     await get_tree().process_frame
+    fail_cooldown = 1.0
     restarting = false
 
 func _has_property(object: Object, property_name: String) -> bool:
