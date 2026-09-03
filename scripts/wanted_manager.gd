@@ -3,8 +3,8 @@ class_name WantedManager
 
 signal state_changed(state: String, stars: int)
 
-@export var search_duration := 12.0
-@export var pursuit_memory := 4.0
+@export var search_duration := 16.0
+@export var pursuit_memory := 5.0
 
 var state := "NONE"
 var stars := 0
@@ -21,7 +21,7 @@ func _process(delta: float) -> void:
         _time_without_sighting += delta
         if _time_without_sighting >= pursuit_memory:
             _set_state("SEARCHING")
-            _search_timer = search_duration
+            _search_timer = search_duration + float(stars) * 2.0
     elif state == "SEARCHING":
         _search_timer -= delta
         if _search_timer <= 0.0:
@@ -33,6 +33,7 @@ func report_crime(crime_position: Vector3, severity: int = 1, suspect: Node3D = 
     stars = clamp(max(stars, severity), 1, 5)
     _time_without_sighting = 0.0
     _set_state("PURSUIT")
+    state_changed.emit(state, stars)
 
 func confirm_sighting(position: Vector3, suspect: Node3D = null) -> void:
     if suspect != null:
@@ -55,6 +56,9 @@ func clear_wanted() -> void:
 
 func get_search_position() -> Vector3:
     return last_known_position
+
+func get_search_time_remaining() -> float:
+    return max(_search_timer, 0.0)
 
 func _set_state(new_state: String) -> void:
     if state == new_state:
