@@ -22,21 +22,21 @@ func _process(delta: float) -> void:
     if sun == null or not is_instance_valid(sun):
         _resolve_world_nodes()
     _update_sun()
-    var minute := int(floor(fmod(time_hours, 1.0) * 60.0))
+    var minute: int = int(floor(fmod(time_hours, 1.0) * 60.0))
     if minute != _last_minute:
         _last_minute = minute
         time_changed.emit(int(floor(time_hours)), minute)
 
 func set_time(hour: float) -> void:
-    time_hours = fmod(max(hour, 0.0), 24.0)
+    time_hours = fmod(maxf(hour, 0.0), 24.0)
     _update_sun()
 
 func is_night() -> bool:
     return time_hours >= 20.0 or time_hours < 6.0
 
 func get_clock_text() -> String:
-    var hour := int(floor(time_hours))
-    var minute := int(floor(fmod(time_hours, 1.0) * 60.0))
+    var hour: int = int(floor(time_hours))
+    var minute: int = int(floor(fmod(time_hours, 1.0) * 60.0))
     return "%02d:%02d" % [hour, minute]
 
 func _resolve_world_nodes() -> void:
@@ -48,8 +48,8 @@ func _resolve_world_nodes() -> void:
 func _update_sun() -> void:
     if sun == null:
         return
-    var normalized := time_hours / 24.0
+    var normalized: float = time_hours / 24.0
     sun.rotation_degrees.x = normalized * 360.0 - 90.0
     sun.rotation_degrees.y = -32.0
-    var daylight := clamp(sin((time_hours - 6.0) / 12.0 * PI), 0.0, 1.0)
-    sun.light_energy = lerp(0.08, 1.25, daylight)
+    var daylight: float = clampf(sin((time_hours - 6.0) / 12.0 * PI), 0.0, 1.0)
+    sun.light_energy = lerpf(0.08, 1.25, daylight)
