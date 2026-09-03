@@ -18,6 +18,9 @@ const CombatManagerScript = preload("res://scripts/combat_manager.gd")
 const CombatHUDScript = preload("res://scripts/combat_hud.gd")
 const WeaponVisualControllerScript = preload("res://scripts/weapon_visual_controller.gd")
 const StoryCombatDirectorScript = preload("res://scripts/story_combat_director.gd")
+const StoryRelationshipManagerScript = preload("res://scripts/story_relationship_manager.gd")
+const StoryDialogueUIScript = preload("res://scripts/story_dialogue_ui.gd")
+const AdrianValeNPCScript = preload("res://scripts/adrian_vale_npc.gd")
 
 func _ready() -> void:
     get_tree().node_added.connect(_on_node_added)
@@ -38,6 +41,14 @@ func _ensure_story_runtime() -> void:
         var campaign := StoryCampaignScript.new()
         campaign.name = "StoryCampaign"
         root.add_child(campaign)
+    if get_tree().get_first_node_in_group("story_relationship_manager") == null:
+        var relationships := StoryRelationshipManagerScript.new()
+        relationships.name = "StoryRelationshipManager"
+        root.add_child(relationships)
+    if get_tree().get_first_node_in_group("story_dialogue_ui") == null:
+        var dialogue := StoryDialogueUIScript.new()
+        dialogue.name = "StoryDialogueUI"
+        root.add_child(dialogue)
     if get_tree().get_first_node_in_group("first_run_mission") == null:
         var first_run := FirstRunMissionScript.new()
         first_run.name = "FirstRunMission"
@@ -74,6 +85,11 @@ func _ensure_story_runtime() -> void:
         var overhead := OverheadMissionScript.new()
         overhead.name = "OverheadMission"
         root.add_child(overhead)
+    if get_tree().get_first_node_in_group("adrian_vale") == null:
+        var adrian := AdrianValeNPCScript.new()
+        adrian.name = "AdrianVale"
+        adrian.global_position = Vector3(46.0, 1.0, -42.0)
+        root.add_child(adrian)
     if get_tree().get_first_node_in_group("story_hud") == null:
         var hud := StoryHUDScript.new()
         hud.name = "StoryHUD"
