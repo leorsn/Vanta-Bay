@@ -22,6 +22,7 @@ const StoryRelationshipManagerScript = preload("res://scripts/story_relationship
 const StoryDialogueUIScript = preload("res://scripts/story_dialogue_ui.gd")
 const AdrianValeNPCScript = preload("res://scripts/adrian_vale_npc.gd")
 const CinematicQualityControllerScript = preload("res://scripts/cinematic_quality_controller.gd")
+const PlayerMotionVisualControllerScript = preload("res://scripts/player_motion_visual_controller.gd")
 
 func _ready() -> void:
     get_tree().node_added.connect(_on_node_added)
@@ -123,3 +124,7 @@ func _ensure_story_runtime() -> void:
         var cinematic := CinematicQualityControllerScript.new()
         cinematic.name = "CinematicQualityController"
         root.add_child(cinematic)
+    if get_tree().get_first_node_in_group("player_motion_visual_controller") == null:
+        var motion := PlayerMotionVisualControllerScript.new()
+        motion.name = "PlayerMotionVisualController"
+        root.add_child(motion)
