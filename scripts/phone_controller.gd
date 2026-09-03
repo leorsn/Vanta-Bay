@@ -1,6 +1,8 @@
 extends CanvasLayer
 class_name VantaPhoneController
 
+signal mateo_message_read()
+
 @onready var panel: Control = $PhonePanel
 @onready var header: Label = $PhonePanel/Header
 @onready var content: Label = $PhonePanel/Content
@@ -8,6 +10,7 @@ class_name VantaPhoneController
 
 var economy: EconomyManager
 var opened := false
+var message_read := false
 
 func _ready() -> void:
     add_to_group("phone_controller")
@@ -23,6 +26,9 @@ func _unhandled_input(event: InputEvent) -> void:
     if event.is_action_pressed("phone"):
         opened = not opened
         panel.visible = opened
+        if opened and not message_read:
+            message_read = true
+            mateo_message_read.emit()
 
 func _on_balances_changed(cash: int, bank: int, rep: int) -> void:
     balance.text = "CASH  $%d\nBANK  $%d\nREP   %d" % [cash, bank, rep]
