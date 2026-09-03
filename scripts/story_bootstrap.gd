@@ -27,6 +27,7 @@ const RenderQualityControllerScript = preload("res://scripts/render_quality_cont
 const WaterVisualControllerScript = preload("res://scripts/water_visual_controller.gd")
 const CityDetailControllerScript = preload("res://scripts/city_detail_controller.gd")
 const EnvironmentDetailControllerScript = preload("res://scripts/environment_detail_controller.gd")
+const VehicleLightingControllerScript = preload("res://scripts/vehicle_lighting_controller.gd")
 
 func _ready() -> void:
     get_tree().node_added.connect(_on_node_added)
@@ -148,3 +149,7 @@ func _ensure_story_runtime() -> void:
         var environment_detail := EnvironmentDetailControllerScript.new()
         environment_detail.name = "EnvironmentDetailController"
         root.add_child(environment_detail)
+    if get_tree().get_first_node_in_group("vehicle_lighting_controller") == null:
+        var vehicle_lighting := VehicleLightingControllerScript.new()
+        vehicle_lighting.name = "VehicleLightingController"
+        root.add_child(vehicle_lighting)
