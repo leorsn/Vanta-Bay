@@ -14,15 +14,15 @@ var ammo_in_mag := 0
 var ammo_reserve := 0
 var reloading := false
 var _cooldown := 0.0
-var _weapon := {}
-var _ammo_state := {}
+var _weapon: Dictionary = {}
+var _ammo_state: Dictionary = {}
 
 func _ready() -> void:
     add_to_group("combat_manager")
     call_deferred("_resolve")
 
 func _process(delta: float) -> void:
-    _cooldown = max(_cooldown - delta, 0.0)
+    _cooldown = maxf(_cooldown - delta, 0.0)
     if inventory == null or not is_instance_valid(inventory):
         _resolve()
 
@@ -41,7 +41,7 @@ func fire() -> void:
     if ammo_in_mag <= 0:
         reload_weapon()
         return
-    var camera := player.player_camera
+    var camera: Camera3D = player.player_camera
     if camera == null:
         return
     ammo_in_mag -= 1
@@ -49,21 +49,21 @@ func fire() -> void:
     _emit_ammo()
     _cooldown = float(_weapon.get("cooldown", 0.22))
     _apply_recoil()
-    var origin := camera.global_position
-    var direction := -camera.global_transform.basis.z
+    var origin: Vector3 = camera.global_position
+    var direction: Vector3 = -camera.global_transform.basis.z
     shot_fired.emit(origin, direction)
-    var end := origin + direction * float(_weapon.get("range", 85.0))
+    var end: Vector3 = origin + direction * float(_weapon.get("range", 85.0))
     var query := PhysicsRayQueryParameters3D.create(origin, end)
     query.exclude = [player]
     query.collide_with_areas = true
     query.collide_with_bodies = true
-    var hit := player.get_world_3d().direct_space_state.intersect_ray(query)
+    var hit: Dictionary = player.get_world_3d().direct_space_state.intersect_ray(query)
     if hit.is_empty():
         return
     var collider = hit.get("collider")
     var impact_position: Vector3 = hit.get("position", end)
     var impact_normal: Vector3 = hit.get("normal", Vector3.UP)
-    var hit_damageable := false
+    var hit_damageable: bool = false
     if collider is Node:
         hit_damageable = _apply_hit(collider as Node, impact_position)
     impact_created.emit(impact_position, impact_normal, hit_damageable)
@@ -71,7 +71,7 @@ func fire() -> void:
 func reload_weapon() -> void:
     if _dialogue_active() or _weapon.is_empty():
         return
-    var magazine_size := int(_weapon.get("magazine", 15))
+    var magazine_size: int = int(_weapon.get("magazine", 15))
     if reloading or ammo_in_mag >= magazine_size or ammo_reserve <= 0:
         return
     reloading = true
@@ -81,8 +81,8 @@ func reload_weapon() -> void:
         reloading = false
         reloading_changed.emit(false)
         return
-    var needed := magazine_size - ammo_in_mag
-    var loaded := min(needed, ammo_reserve)
+    var needed: int = magazine_size - ammo_in_mag
+    var loaded: int = mini(needed, ammo_reserve)
     ammo_in_mag += loaded
     ammo_reserve -= loaded
     _store_ammo_state()
@@ -94,8 +94,8 @@ func _apply_hit(node: Node, impact_position: Vector3) -> bool:
     var damage_target: Node = node
     while damage_target != null:
         if damage_target.has_method("apply_damage"):
-            var base_damage := float(_weapon.get("damage", 34.0))
-            var multiplier := _damage_multiplier(damage_target, impact_position)
+            var base_damage: float = float(_weapon.get("damage", 34.0))
+            var multiplier: float = _damage_multiplier(damage_target, impact_position)
             damage_target.call("apply_damage", base_damage * multiplier, player)
             _report_weapon_crime(damage_target)
             hit_confirmed.emit(multiplier >= 1.9)
@@ -105,7 +105,7 @@ func _apply_hit(node: Node, impact_position: Vector3) -> bool:
 
 func _damage_multiplier(target: Node, impact_position: Vector3) -> float:
     if target is Node3D:
-        var local_y := impact_position.y - (target as Node3D).global_position.y
+        var local_y: float = impact_position.y - (target as Node3D).global_position.y
         if local_y > 1.35:
             return 2.0
         if local_y < 0.55:
@@ -115,9 +115,9 @@ func _damage_multiplier(target: Node, impact_position: Vector3) -> float:
 func _apply_recoil() -> void:
     if player == null:
         return
-    var weapon_id := inventory.equipped_id if inventory != null else "pistol"
-    var pitch := 0.018
-    var yaw := randf_range(-0.004, 0.004)
+    var weapon_id: String = inventory.equipped_id if inventory != null else "pistol"
+    var pitch: float = 0.018
+    var yaw: float = randf_range(-0.004, 0.004)
     match weapon_id:
         "smg":
             pitch = 0.011
