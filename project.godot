@@ -32,6 +32,7 @@ interact={"deadzone":0.2,"events":[Object(InputEventKey,"physical_keycode":69)]}
 phone={"deadzone":0.2,"events":[Object(InputEventKey,"physical_keycode":80)]}
 restart_mission={"deadzone":0.2,"events":[Object(InputEventKey,"physical_keycode":75)]}
 fire={"deadzone":0.2,"events":[Object(InputEventMouseButton,"button_index":1)]}
+aim={"deadzone":0.2,"events":[Object(InputEventMouseButton,"button_index":2)]}
 reload={"deadzone":0.2,"events":[Object(InputEventKey,"physical_keycode":82)]}
 weapon_1={"deadzone":0.2,"events":[Object(InputEventKey,"physical_keycode":49)]}
 weapon_2={"deadzone":0.2,"events":[Object(InputEventKey,"physical_keycode":50)]}
