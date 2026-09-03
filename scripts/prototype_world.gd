@@ -11,6 +11,7 @@ var glass := Color(0.16, 0.23, 0.28, 1.0)
 func _ready() -> void:
     _build_roads()
     _build_blocks()
+    _build_black_glass_garage()
     _build_beach_edge()
     _build_street_furniture()
     _spawn_pedestrians()
@@ -32,6 +33,27 @@ func _build_blocks() -> void:
     _building(Vector3(29, 8.5, -44), Vector3(20, 17, 20), Color(0.16, 0.18, 0.19, 1))
     _building(Vector3(31, 13.0, -2), Vector3(23, 26, 30), Color(0.11, 0.13, 0.14, 1))
     _building(Vector3(29, 6.0, 36), Vector3(21, 12, 22), Color(0.26, 0.24, 0.21, 1))
+
+func _build_black_glass_garage() -> void:
+    var garage := Node3D.new()
+    garage.name = "BlackGlassGarage"
+    garage.position = Vector3(-22, 0, 43)
+    garage.add_to_group("black_glass_garage")
+    add_child(garage)
+
+    _add_box_to(garage, "GarageFloor", Vector3.ZERO, Vector3(15, 0.3, 18), Color(0.12, 0.12, 0.12, 1), true)
+    _add_box_to(garage, "BackWall", Vector3(0, 3.0, 8.7), Vector3(15, 6, 0.5), Color(0.15, 0.15, 0.16, 1), true)
+    _add_box_to(garage, "LeftWall", Vector3(-7.25, 3.0, 0), Vector3(0.5, 6, 18), Color(0.15, 0.15, 0.16, 1), true)
+    _add_box_to(garage, "RightWall", Vector3(7.25, 3.0, 0), Vector3(0.5, 6, 18), Color(0.15, 0.15, 0.16, 1), true)
+    _add_box_to(garage, "Roof", Vector3(0, 6.0, 0), Vector3(15, 0.35, 18), Color(0.08, 0.08, 0.09, 1), true)
+
+    var label := Label3D.new()
+    label.text = "OCEAN DRIVE PRIVATE GARAGE"
+    label.position = Vector3(0, 4.7, -9.3)
+    label.font_size = 32
+    label.outline_size = 8
+    label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+    garage.add_child(label)
 
 func _building(position: Vector3, size: Vector3, color: Color) -> void:
     _add_box("Building", position, size, color, true)
@@ -99,6 +121,9 @@ func _palm(position: Vector3) -> void:
         add_child(leaf)
 
 func _add_box(node_name: String, position: Vector3, size: Vector3, color: Color, collision: bool) -> Node3D:
+    return _add_box_to(self, node_name, position, size, color, collision)
+
+func _add_box_to(parent_node: Node3D, node_name: String, position: Vector3, size: Vector3, color: Color, collision: bool) -> Node3D:
     var root: Node3D
     if collision:
         var body := StaticBody3D.new()
@@ -113,7 +138,7 @@ func _add_box(node_name: String, position: Vector3, size: Vector3, color: Color,
 
     root.name = node_name
     root.position = position
-    add_child(root)
+    parent_node.add_child(root)
 
     var mesh_instance := MeshInstance3D.new()
     var mesh := BoxMesh.new()
