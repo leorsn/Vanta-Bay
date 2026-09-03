@@ -89,6 +89,10 @@ func _on_followup_read() -> void:
     if saves != null:
         saves.set_flag("black_glass_complete", true)
         saves.set_flag("network_thread_started", true)
+    var campaign := get_tree().get_first_node_in_group("story_campaign") as StoryCampaign
+    if campaign != null and campaign.get_current_id() == "black_glass":
+        campaign.complete_current()
+    elif saves != null:
         saves.autosave()
     mission_completed.emit()
     _refresh_hud()
@@ -110,4 +114,4 @@ func _refresh_hud() -> void:
     elif objective_index == 5:
         mission_label.text += "\nPRESS P TO READ THE SECURE MESSAGE"
     elif objective_index == 6:
-        mission_label.text += "\n+$%d BANK   +%d REP\nSTORY AUTOSAVED" % [reward_cash, reward_rep]
+        mission_label.text += "\n+$%d BANK   +%d REP\nNEXT: LOSE THEM" % [reward_cash, reward_rep]
