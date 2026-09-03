@@ -2,6 +2,9 @@ extends Node3D
 
 const PedestrianAgent = preload("res://scripts/pedestrian_agent.gd")
 const TrafficAgent = preload("res://scripts/traffic_agent.gd")
+const StoryCampaignScript = preload("res://scripts/story_campaign.gd")
+const LoseThemMissionScript = preload("res://scripts/lose_them_mission.gd")
+const ApartmentStoryZoneScript = preload("res://scripts/apartment_story_zone.gd")
 
 var asphalt := Color(0.055, 0.06, 0.065, 1.0)
 var concrete := Color(0.34, 0.35, 0.34, 1.0)
@@ -9,6 +12,7 @@ var sand := Color(0.58, 0.50, 0.37, 1.0)
 var glass := Color(0.16, 0.23, 0.28, 1.0)
 
 func _ready() -> void:
+    _ensure_story_systems()
     _build_roads()
     _build_blocks()
     _build_jace_apartment()
@@ -17,6 +21,27 @@ func _ready() -> void:
     _build_street_furniture()
     _spawn_pedestrians()
     _spawn_traffic()
+
+func _ensure_story_systems() -> void:
+    if get_tree().get_first_node_in_group("story_campaign") == null:
+        var campaign := StoryCampaignScript.new()
+        campaign.name = "StoryCampaign"
+        add_child(campaign)
+    if get_tree().get_first_node_in_group("lose_them_mission") == null:
+        var mission := LoseThemMissionScript.new()
+        mission.name = "LoseThemMission"
+        var hud := CanvasLayer.new()
+        hud.name = "MissionHUD"
+        mission.add_child(hud)
+        var label := Label.new()
+        label.name = "Objective"
+        label.offset_left = 56.0
+        label.offset_top = 200.0
+        label.offset_right = 760.0
+        label.offset_bottom = 320.0
+        label.add_theme_font_size_override("font_size", 24)
+        hud.add_child(label)
+        add_child(mission)
 
 func _build_roads() -> void:
     _add_box("OceanDrive", Vector3(0, 0.015, 0), Vector3(18, 0.03, 120), asphalt, false)
@@ -50,6 +75,16 @@ func _build_jace_apartment() -> void:
     _add_box_to(apartment, "Bed", Vector3(-3.2, 0.65, 2.6), Vector3(3.4, 1.0, 5.2), Color(0.17, 0.18, 0.20, 1), true)
     _add_box_to(apartment, "Counter", Vector3(3.4, 0.85, 2.6), Vector3(3.0, 1.5, 1.2), Color(0.10, 0.10, 0.10, 1), true)
     _add_box_to(apartment, "Sofa", Vector3(2.4, 0.75, -1.2), Vector3(4.0, 1.2, 1.8), Color(0.20, 0.19, 0.18, 1), true)
+
+    var zone := ApartmentStoryZoneScript.new()
+    zone.name = "StoryZone"
+    zone.position = Vector3(0, 1.5, 0)
+    var collider := CollisionShape3D.new()
+    var shape := BoxShape3D.new()
+    shape.size = Vector3(10, 3, 9)
+    collider.shape = shape
+    zone.add_child(collider)
+    apartment.add_child(zone)
 
     var label := Label3D.new()
     label.text = "JACE'S APARTMENT"
