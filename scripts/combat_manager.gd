@@ -27,6 +27,8 @@ func _process(delta: float) -> void:
         _resolve()
 
 func _unhandled_input(event: InputEvent) -> void:
+    if _dialogue_active():
+        return
     if event.is_action_pressed("fire"):
         fire()
     elif event.is_action_pressed("reload"):
@@ -34,7 +36,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func fire() -> void:
     _resolve()
-    if player == null or player.driving or _cooldown > 0.0 or reloading or _weapon.is_empty():
+    if _dialogue_active() or player == null or player.driving or _cooldown > 0.0 or reloading or _weapon.is_empty():
         return
     if ammo_in_mag <= 0:
         reload_weapon()
@@ -67,7 +69,7 @@ func fire() -> void:
     impact_created.emit(impact_position, impact_normal, hit_damageable)
 
 func reload_weapon() -> void:
-    if _weapon.is_empty():
+    if _dialogue_active() or _weapon.is_empty():
         return
     var magazine_size := int(_weapon.get("magazine", 15))
     if reloading or ammo_in_mag >= magazine_size or ammo_reserve <= 0:
@@ -75,6 +77,10 @@ func reload_weapon() -> void:
     reloading = true
     reloading_changed.emit(true)
     await get_tree().create_timer(float(_weapon.get("reload", 1.25))).timeout
+    if _weapon.is_empty():
+        reloading = false
+        reloading_changed.emit(false)
+        return
     var needed := magazine_size - ammo_in_mag
     var loaded := min(needed, ammo_reserve)
     ammo_in_mag += loaded
@@ -125,13 +131,12 @@ func _apply_recoil() -> void:
     player.add_recoil(pitch, yaw)
 
 func _report_weapon_crime(target: Node) -> void:
+    if target.is_in_group("hostiles") or target.is_in_group("police"):
+        return
     var wanted := get_tree().get_first_node_in_group("wanted_manager") as WantedManager
     if wanted == null or player == null:
         return
-    var severity := 2
-    if target.is_in_group("police"):
-        severity = 4
-    wanted.report_crime(player.global_position, severity, player)
+    wanted.report_crime(player.global_position, 2, player)
 
 func get_ammo_text() -> String:
     if reloading:
@@ -171,3 +176,7 @@ func _resolve() -> void:
             if not inventory.weapon_changed.is_connected(_on_weapon_changed):
                 inventory.weapon_changed.connect(_on_weapon_changed)
             _on_weapon_changed(inventory.equipped_id, inventory.get_current())
+
+func _dialogue_active() -> bool:
+    var dialogue := get_tree().get_first_node_in_group("story_dialogue_ui") as StoryDialogueUI
+    return dialogue != null and dialogue.active
