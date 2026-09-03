@@ -15,7 +15,7 @@ func _ready() -> void:
 
 func _process(_delta: float) -> void:
     _resolve_nodes()
-    if player == null or campaign == null:
+    if player == null or campaign == null or campaign.is_arc_complete():
         label.text = ""
         return
 
@@ -61,7 +61,7 @@ func _get_target() -> Dictionary:
             var step := int(after_midnight.get("step"))
             if step == 1:
                 return _target(after_midnight.get("club_position"), "OLD BAY CONTACT")
-            if step == 2:
+            if step == 3:
                 return _target(after_midnight.get("marina_drop_position"), "MARINA DROP")
         "wrong_place":
             var wrong_place = get_tree().get_first_node_in_group("wrong_place_mission")
@@ -70,7 +70,7 @@ func _get_target() -> Dictionary:
             var step := int(wrong_place.get("step"))
             if step == 0:
                 return _target(wrong_place.get("meeting_position"), "MATEO'S CONTACT")
-            if step == 2:
+            if step == 3:
                 return _target(wrong_place.get("escape_position"), "OLD BAY SAFE POINT")
         "black_glass":
             if mission != null and mission.objective_index == 1 and garage_marker != null:
@@ -117,8 +117,8 @@ func _get_target() -> Dictionary:
             var step := int(overhead.get("step"))
             if step == 0:
                 return _target(overhead.get("rooftop_position"), "ROOFTOP MEETING")
-            if step == 1:
-                return _target(overhead.get("exit_position"), "EXIT ROUTE")
+            if step == 3:
+                return _target(overhead.get("exit_position"), "PORT VANTA EXIT")
     return {}
 
 func _target(position_value, target_name: String) -> Dictionary:
