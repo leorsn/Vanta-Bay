@@ -1,6 +1,8 @@
 extends CharacterBody3D
 class_name VantaVehicleController
 
+const VehicleVisualScript = preload("res://scripts/vehicle_visual.gd")
+
 @export_category("Vehicle")
 @export var display_name := "Vellaro S1 Prototype"
 @export var max_speed_kph: float = 185.0
@@ -17,6 +19,7 @@ class_name VantaVehicleController
 @export var exit_offset := Vector3(-1.8, 0.4, 0.0)
 
 @onready var camera: Camera3D = $CameraRig/SpringArm3D/Camera3D
+@onready var spring_arm: SpringArm3D = $CameraRig/SpringArm3D
 @onready var interaction_label: Label = $VehicleHUD/Interaction
 @onready var speed_label: Label = $VehicleHUD/Speed
 @onready var name_label: Label = $VehicleHUD/VehicleName
@@ -32,11 +35,18 @@ var plates_changed := false
 var identity_heat_cleared := false
 var plate_code := "VB 271"
 var plate_label: Label3D
+var visual_root: VantaVehicleVisual
 
 func _ready() -> void:
     add_to_group("vehicles")
     camera.current = false
+    body_mesh.visible = false
+    spring_arm.spring_length = 7.2
+    camera.fov = 69.0
     _set_hud_visible(false)
+    visual_root = VehicleVisualScript.new() as VantaVehicleVisual
+    visual_root.body_color = Color(0.18, 0.19, 0.21, 1.0)
+    add_child(visual_root)
     _build_plate_visual()
 
 func _physics_process(delta: float) -> void:
@@ -129,13 +139,8 @@ func exit_vehicle() -> void:
 
 func repaint_vehicle() -> void:
     repaint_complete = true
-    if body_mesh == null:
-        return
-    var material := StandardMaterial3D.new()
-    material.albedo_color = Color(0.055, 0.065, 0.075, 1.0)
-    material.metallic = 0.86
-    material.roughness = 0.18
-    body_mesh.material_override = material
+    if visual_root != null:
+        visual_root.set_body_color(Color(0.035, 0.045, 0.055, 1.0))
 
 func change_plates() -> void:
     plates_changed = true
@@ -159,10 +164,10 @@ func _build_plate_visual() -> void:
         return
     plate_label = Label3D.new()
     plate_label.name = "RearPlate"
-    plate_label.position = Vector3(0.0, 0.15, 2.23)
+    plate_label.position = Vector3(0.0, 0.34, 2.25)
     plate_label.rotation_degrees = Vector3(0.0, 180.0, 0.0)
-    plate_label.font_size = 22
-    plate_label.outline_size = 5
+    plate_label.font_size = 18
+    plate_label.outline_size = 4
     plate_label.modulate = Color(0.95, 0.95, 0.90, 1.0)
     plate_label.no_depth_test = false
     add_child(plate_label)
