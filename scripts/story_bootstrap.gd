@@ -16,6 +16,7 @@ const MissionCheckpointManagerScript = preload("res://scripts/mission_checkpoint
 const WeaponInventoryScript = preload("res://scripts/weapon_inventory.gd")
 const CombatManagerScript = preload("res://scripts/combat_manager.gd")
 const CombatHUDScript = preload("res://scripts/combat_hud.gd")
+const WeaponVisualControllerScript = preload("res://scripts/weapon_visual_controller.gd")
 const StoryCombatDirectorScript = preload("res://scripts/story_combat_director.gd")
 
 func _ready() -> void:
@@ -93,6 +94,10 @@ func _ensure_story_runtime() -> void:
         var combat_hud := CombatHUDScript.new()
         combat_hud.name = "CombatHUD"
         root.add_child(combat_hud)
+    if get_tree().get_first_node_in_group("weapon_visual_controller") == null:
+        var weapon_visuals := WeaponVisualControllerScript.new()
+        weapon_visuals.name = "WeaponVisualController"
+        root.add_child(weapon_visuals)
     if get_tree().get_first_node_in_group("story_combat_director") == null:
         var combat_director := StoryCombatDirectorScript.new()
         combat_director.name = "StoryCombatDirector"
