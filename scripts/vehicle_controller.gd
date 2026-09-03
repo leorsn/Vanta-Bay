@@ -54,8 +54,8 @@ func _physics_process(delta: float) -> void:
     _update_hud()
 
 func _simulate_drive(delta: float) -> void:
-    var max_forward := max_speed_kph / 3.6
-    var max_reverse := reverse_speed_kph / 3.6
+    var max_forward: float = max_speed_kph / 3.6
+    var max_reverse: float = reverse_speed_kph / 3.6
 
     if throttle_input > 0.01:
         speed_mps = move_toward(speed_mps, max_forward, acceleration * throttle_input * delta)
@@ -70,35 +70,35 @@ func _simulate_drive(delta: float) -> void:
     if Input.is_action_pressed("vehicle_handbrake"):
         speed_mps = move_toward(speed_mps, 0.0, braking * 1.35 * delta)
 
-    var abs_speed_kph := abs(speed_mps) * 3.6
-    var steering_factor := clamp(1.0 - (abs_speed_kph / max(steering_fade_speed_kph, 1.0)) * 0.55, 0.38, 1.0)
-    var direction_sign := 1.0 if speed_mps >= 0.0 else -1.0
-    if abs(speed_mps) > 0.35:
+    var abs_speed_kph: float = absf(speed_mps) * 3.6
+    var steering_factor: float = clampf(1.0 - (abs_speed_kph / maxf(steering_fade_speed_kph, 1.0)) * 0.55, 0.38, 1.0)
+    var direction_sign: float = 1.0 if speed_mps >= 0.0 else -1.0
+    if absf(speed_mps) > 0.35:
         rotation.y -= steering_input * steering_rate * steering_factor * direction_sign * delta
 
-    var forward := -global_transform.basis.z.normalized()
-    var desired := forward * speed_mps
+    var forward: Vector3 = -global_transform.basis.z.normalized()
+    var desired: Vector3 = forward * speed_mps
     velocity.x = move_toward(velocity.x, desired.x, grip * delta)
     velocity.z = move_toward(velocity.z, desired.z, grip * delta)
 
     if not is_on_floor():
-        velocity.y -= ProjectSettings.get_setting("physics/3d/default_gravity") * delta
+        velocity.y -= float(ProjectSettings.get_setting("physics/3d/default_gravity")) * delta
     else:
         velocity.y = -0.2
 
     move_and_slide()
 
 func _coast_to_stop(delta: float) -> void:
-    if abs(speed_mps) < 0.01:
+    if absf(speed_mps) < 0.01:
         speed_mps = 0.0
         velocity = Vector3.ZERO
         return
     speed_mps = move_toward(speed_mps, 0.0, rolling_drag * delta)
-    var forward := -global_transform.basis.z.normalized()
+    var forward: Vector3 = -global_transform.basis.z.normalized()
     velocity.x = forward.x * speed_mps
     velocity.z = forward.z * speed_mps
     if not is_on_floor():
-        velocity.y -= ProjectSettings.get_setting("physics/3d/default_gravity") * delta
+        velocity.y -= float(ProjectSettings.get_setting("physics/3d/default_gravity")) * delta
     move_and_slide()
 
 func enter_vehicle(player: VantaPlayerController) -> void:
@@ -152,7 +152,7 @@ func is_identity_clean() -> bool:
     return repaint_complete and plates_changed and identity_heat_cleared
 
 func get_speed_kph() -> float:
-    return abs(speed_mps) * 3.6
+    return absf(speed_mps) * 3.6
 
 func _build_plate_visual() -> void:
     if plate_label != null:
