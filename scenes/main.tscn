@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3]
+[gd_scene load_steps=23 format=3]
 
 [ext_resource path="res://scripts/player_controller.gd" type="Script" id="1_player"]
 [ext_resource path="res://scripts/vehicle_controller.gd" type="Script" id="2_vehicle"]
@@ -11,82 +11,65 @@
 [ext_resource path="res://scripts/economy_manager.gd" type="Script" id="9_economy"]
 [ext_resource path="res://scripts/phone_controller.gd" type="Script" id="10_phone"]
 [ext_resource path="res://scripts/crime_reporter.gd" type="Script" id="11_crime"]
+[ext_resource path="res://scripts/story_save_manager.gd" type="Script" id="12_save"]
 
 [sub_resource type="CapsuleShape3D" id="PlayerShape"]
 radius = 0.42
 height = 1.8
-
 [sub_resource type="CapsuleMesh" id="PlayerMesh"]
 radius = 0.42
 height = 1.8
-
 [sub_resource type="BoxShape3D" id="GroundShape"]
 size = Vector3(120, 1, 120)
-
 [sub_resource type="BoxMesh" id="GroundMesh"]
 size = Vector3(120, 1, 120)
-
 [sub_resource type="StandardMaterial3D" id="GroundMaterial"]
 albedo_color = Color(0.075, 0.085, 0.095, 1)
 roughness = 0.88
-
 [sub_resource type="BoxShape3D" id="VehicleShape"]
 size = Vector3(1.9, 1.25, 4.4)
-
 [sub_resource type="BoxMesh" id="VehicleMesh"]
 size = Vector3(1.9, 1.25, 4.4)
-
 [sub_resource type="StandardMaterial3D" id="VehicleMaterial"]
 albedo_color = Color(0.42, 0.44, 0.47, 1)
 metallic = 0.8
 roughness = 0.2
-
 [sub_resource type="StandardMaterial3D" id="PlayerMaterial"]
 albedo_color = Color(0.86, 0.86, 0.84, 1)
 roughness = 0.65
-
 [sub_resource type="BoxShape3D" id="PoliceShape"]
 size = Vector3(2.0, 1.35, 4.6)
-
 [sub_resource type="BoxMesh" id="PoliceMesh"]
 size = Vector3(2.0, 1.35, 4.6)
-
 [sub_resource type="StandardMaterial3D" id="PoliceMaterial"]
 albedo_color = Color(0.04, 0.055, 0.075, 1)
 metallic = 0.55
 roughness = 0.3
-
 [sub_resource type="BoxShape3D" id="WorkshopZoneShape"]
 size = Vector3(10, 3, 10)
 
 [node name="VantaBay" type="Node3D"]
 script = ExtResource("3_world")
-
 [node name="EconomyManager" type="Node" parent="."]
 script = ExtResource("9_economy")
-
+[node name="StorySaveManager" type="Node" parent="."]
+script = ExtResource("12_save")
 [node name="WantedManager" type="Node" parent="."]
 script = ExtResource("4_wanted")
-
 [node name="CrimeReporter" type="Node" parent="."]
 script = ExtResource("11_crime")
-
 [node name="BlackGlassMission" type="Node" parent="."]
 script = ExtResource("6_mission")
-
 [node name="MissionHUD" type="CanvasLayer" parent="BlackGlassMission"]
-
 [node name="Objective" type="Label" parent="BlackGlassMission/MissionHUD"]
 offset_left = 56.0
 offset_top = 58.0
 offset_right = 700.0
-offset_bottom = 170.0
+offset_bottom = 190.0
 theme_override_font_sizes/font_size = 24
-text = "BLACK GLASS\nSTEAL THE VEHICLE"
-
+text = "BLACK GLASS\nREAD MATEO'S MESSAGE"
 [node name="WantedHUD" type="CanvasLayer" parent="."]
 script = ExtResource("8_wantedhud")
-
 [node name="WantedLabel" type="Label" parent="WantedHUD"]
 offset_left = 1430.0
 offset_top = 55.0
@@ -94,16 +77,13 @@ offset_right = 1840.0
 offset_bottom = 135.0
 theme_override_font_sizes/font_size = 26
 horizontal_alignment = 2
-
 [node name="Phone" type="CanvasLayer" parent="."]
 script = ExtResource("10_phone")
-
 [node name="PhonePanel" type="Panel" parent="Phone"]
 offset_left = 1320.0
 offset_top = 150.0
 offset_right = 1810.0
 offset_bottom = 900.0
-
 [node name="Header" type="Label" parent="Phone/PhonePanel"]
 offset_left = 28.0
 offset_top = 30.0
@@ -111,7 +91,6 @@ offset_right = 460.0
 offset_bottom = 76.0
 theme_override_font_sizes/font_size = 22
 text = "VANTA OS"
-
 [node name="Content" type="Label" parent="Phone/PhonePanel"]
 offset_left = 28.0
 offset_top = 105.0
@@ -119,14 +98,12 @@ offset_right = 455.0
 offset_bottom = 450.0
 theme_override_font_sizes/font_size = 20
 autowrap_mode = 2
-
 [node name="Balance" type="Label" parent="Phone/PhonePanel"]
 offset_left = 28.0
 offset_top = 555.0
 offset_right = 455.0
 offset_bottom = 710.0
 theme_override_font_sizes/font_size = 20
-
 [node name="PhoneHint" type="Label" parent="Phone"]
 offset_left = 1540.0
 offset_top = 1010.0
@@ -135,47 +112,35 @@ offset_bottom = 1055.0
 theme_override_font_sizes/font_size = 18
 text = "P  VANTA OS"
 horizontal_alignment = 2
-
 [node name="Sun" type="DirectionalLight3D" parent="."]
 rotation_degrees = Vector3(-48, -32, 0)
 light_energy = 1.25
 shadow_enabled = true
-
 [node name="Ground" type="StaticBody3D" parent="."]
-
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Ground"]
 position = Vector3(0, -0.5, 0)
 shape = SubResource("GroundShape")
-
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Ground"]
 position = Vector3(0, -0.5, 0)
 mesh = SubResource("GroundMesh")
 material_override = SubResource("GroundMaterial")
-
 [node name="Player" type="CharacterBody3D" parent="."]
 position = Vector3(0, 1.1, 4)
 script = ExtResource("1_player")
-
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Player"]
 shape = SubResource("PlayerShape")
-
 [node name="Body" type="MeshInstance3D" parent="Player"]
 mesh = SubResource("PlayerMesh")
 material_override = SubResource("PlayerMaterial")
-
 [node name="CameraPivot" type="Node3D" parent="Player"]
 position = Vector3(0, 1.55, 0)
-
 [node name="SpringArm3D" type="SpringArm3D" parent="Player/CameraPivot"]
 spring_length = 4.5
 margin = 0.15
-
 [node name="Camera3D" type="Camera3D" parent="Player/CameraPivot/SpringArm3D"]
 current = true
 fov = 70.0
-
 [node name="PlayerHUD" type="CanvasLayer" parent="Player"]
-
 [node name="InteractionPrompt" type="Label" parent="Player/PlayerHUD"]
 offset_left = 760.0
 offset_top = 930.0
@@ -184,31 +149,23 @@ offset_bottom = 980.0
 theme_override_font_sizes/font_size = 24
 text = "E  DRIVE"
 horizontal_alignment = 1
-
 [node name="PrototypeVehicle" type="CharacterBody3D" parent="."]
 position = Vector3(4, 0.72, 0)
 script = ExtResource("2_vehicle")
-
 [node name="CollisionShape3D" type="CollisionShape3D" parent="PrototypeVehicle"]
 shape = SubResource("VehicleShape")
-
 [node name="Body" type="MeshInstance3D" parent="PrototypeVehicle"]
 mesh = SubResource("VehicleMesh")
 material_override = SubResource("VehicleMaterial")
-
 [node name="CameraRig" type="Node3D" parent="PrototypeVehicle"]
 position = Vector3(0, 1.65, 0)
 rotation_degrees = Vector3(-7, 0, 0)
-
 [node name="SpringArm3D" type="SpringArm3D" parent="PrototypeVehicle/CameraRig"]
 spring_length = 6.5
 margin = 0.2
-
 [node name="Camera3D" type="Camera3D" parent="PrototypeVehicle/CameraRig/SpringArm3D"]
 fov = 72.0
-
 [node name="VehicleHUD" type="CanvasLayer" parent="PrototypeVehicle"]
-
 [node name="VehicleName" type="Label" parent="PrototypeVehicle/VehicleHUD"]
 offset_left = 60.0
 offset_top = 170.0
@@ -216,7 +173,6 @@ offset_right = 520.0
 offset_bottom = 210.0
 theme_override_font_sizes/font_size = 22
 text = "Vellaro S1 Prototype"
-
 [node name="Speed" type="Label" parent="PrototypeVehicle/VehicleHUD"]
 offset_left = 1510.0
 offset_top = 900.0
@@ -225,7 +181,6 @@ offset_bottom = 980.0
 theme_override_font_sizes/font_size = 38
 text = "000 km/h"
 horizontal_alignment = 2
-
 [node name="Interaction" type="Label" parent="PrototypeVehicle/VehicleHUD"]
 offset_left = 760.0
 offset_top = 930.0
@@ -234,47 +189,35 @@ offset_bottom = 980.0
 theme_override_font_sizes/font_size = 22
 text = "E  EXIT VEHICLE"
 horizontal_alignment = 1
-
 [node name="PoliceCruiserA" type="CharacterBody3D" parent="."]
 position = Vector3(-5, 0.75, -42)
 script = ExtResource("5_police")
-
 [node name="CollisionShape3D" type="CollisionShape3D" parent="PoliceCruiserA"]
 shape = SubResource("PoliceShape")
-
 [node name="Body" type="MeshInstance3D" parent="PoliceCruiserA"]
 mesh = SubResource("PoliceMesh")
 material_override = SubResource("PoliceMaterial")
-
 [node name="PoliceCruiserB" type="CharacterBody3D" parent="."]
 position = Vector3(7, 0.75, 44)
 script = ExtResource("5_police")
-
 [node name="CollisionShape3D" type="CollisionShape3D" parent="PoliceCruiserB"]
 shape = SubResource("PoliceShape")
-
 [node name="Body" type="MeshInstance3D" parent="PoliceCruiserB"]
 mesh = SubResource("PoliceMesh")
 material_override = SubResource("PoliceMaterial")
-
 [node name="PoliceCruiserC" type="CharacterBody3D" parent="."]
 position = Vector3(-38, 0.75, -24)
 script = ExtResource("5_police")
-
 [node name="CollisionShape3D" type="CollisionShape3D" parent="PoliceCruiserC"]
 shape = SubResource("PoliceShape")
-
 [node name="Body" type="MeshInstance3D" parent="PoliceCruiserC"]
 mesh = SubResource("PoliceMesh")
 material_override = SubResource("PoliceMaterial")
-
 [node name="WorkshopDelivery" type="Area3D" parent="."]
 position = Vector3(-4, 1.5, 48)
 script = ExtResource("7_workshop")
-
 [node name="CollisionShape3D" type="CollisionShape3D" parent="WorkshopDelivery"]
 shape = SubResource("WorkshopZoneShape")
-
 [node name="WorkshopMarker" type="Label3D" parent="WorkshopDelivery"]
 position = Vector3(0, 2.5, 0)
 text = "PORT VANTA WORKSHOP\nDELIVERY"
