@@ -8,6 +8,8 @@ const WrongPlaceMissionScript = preload("res://scripts/wrong_place_mission.gd")
 const LoseThemMissionScript = preload("res://scripts/lose_them_mission.gd")
 const CleanSlateMissionScript = preload("res://scripts/clean_slate_mission.gd")
 const TheIntroductionMissionScript = preload("res://scripts/the_introduction_mission.gd")
+const TermsConditionsMissionScript = preload("res://scripts/terms_conditions_mission.gd")
+const OverheadMissionScript = preload("res://scripts/overhead_mission.gd")
 const WorldClockScript = preload("res://scripts/world_clock.gd")
 
 func _ready() -> void:
@@ -57,3 +59,11 @@ func _ensure_story_runtime() -> void:
         var introduction := TheIntroductionMissionScript.new()
         introduction.name = "TheIntroductionMission"
         root.add_child(introduction)
+    if get_tree().get_first_node_in_group("terms_conditions_mission") == null:
+        var terms := TermsConditionsMissionScript.new()
+        terms.name = "TermsConditionsMission"
+        root.add_child(terms)
+    if get_tree().get_first_node_in_group("overhead_mission") == null:
+        var overhead := OverheadMissionScript.new()
+        overhead.name = "OverheadMission"
+        root.add_child(overhead)
