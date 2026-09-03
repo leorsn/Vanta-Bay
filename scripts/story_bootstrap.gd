@@ -2,6 +2,7 @@ extends Node
 
 const StoryCampaignScript = preload("res://scripts/story_campaign.gd")
 const FirstRunMissionScript = preload("res://scripts/first_run_mission.gd")
+const NoQuestionsMissionScript = preload("res://scripts/no_questions_mission.gd")
 const LoseThemMissionScript = preload("res://scripts/lose_them_mission.gd")
 
 func _ready() -> void:
@@ -23,6 +24,10 @@ func _ensure_story_runtime() -> void:
         var first_run := FirstRunMissionScript.new()
         first_run.name = "FirstRunMission"
         root.add_child(first_run)
+    if get_tree().get_first_node_in_group("no_questions_mission") == null:
+        var no_questions := NoQuestionsMissionScript.new()
+        no_questions.name = "NoQuestionsMission"
+        root.add_child(no_questions)
     if get_tree().get_first_node_in_group("lose_them_mission") == null:
         var lose_them := LoseThemMissionScript.new()
         lose_them.name = "LoseThemMission"
