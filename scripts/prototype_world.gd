@@ -11,6 +11,7 @@ var glass := Color(0.16, 0.23, 0.28, 1.0)
 func _ready() -> void:
     _build_roads()
     _build_blocks()
+    _build_jace_apartment()
     _build_black_glass_garage()
     _build_beach_edge()
     _build_street_furniture()
@@ -22,7 +23,6 @@ func _build_roads() -> void:
     _add_box("CrossStreet", Vector3(0, 0.02, -26), Vector3(120, 0.04, 16), asphalt, false)
     _add_box("WestSidewalk", Vector3(-12, 0.13, 0), Vector3(6, 0.26, 120), concrete, true)
     _add_box("EastSidewalk", Vector3(12, 0.13, 0), Vector3(6, 0.26, 120), concrete, true)
-
     for z in range(-54, 58, 12):
         _add_box("LaneMark", Vector3(0, 0.045, float(z)), Vector3(0.22, 0.025, 5.0), Color(0.82, 0.80, 0.68, 1), false)
 
@@ -34,19 +34,42 @@ func _build_blocks() -> void:
     _building(Vector3(31, 13.0, -2), Vector3(23, 26, 30), Color(0.11, 0.13, 0.14, 1))
     _building(Vector3(29, 6.0, 36), Vector3(21, 12, 22), Color(0.26, 0.24, 0.21, 1))
 
+func _build_jace_apartment() -> void:
+    var apartment := Node3D.new()
+    apartment.name = "JaceApartment"
+    apartment.position = Vector3(-49, 0, -47)
+    apartment.add_to_group("jace_apartment")
+    add_child(apartment)
+
+    _add_box_to(apartment, "Floor", Vector3.ZERO, Vector3(12, 0.25, 11), Color(0.16, 0.15, 0.14, 1), true)
+    _add_box_to(apartment, "BackWall", Vector3(0, 2.6, 5.35), Vector3(12, 5.2, 0.3), Color(0.24, 0.23, 0.22, 1), true)
+    _add_box_to(apartment, "LeftWall", Vector3(-5.85, 2.6, 0), Vector3(0.3, 5.2, 11), Color(0.24, 0.23, 0.22, 1), true)
+    _add_box_to(apartment, "RightWall", Vector3(5.85, 2.6, 0), Vector3(0.3, 5.2, 11), Color(0.24, 0.23, 0.22, 1), true)
+    _add_box_to(apartment, "FrontWallL", Vector3(-4.1, 2.6, -5.35), Vector3(3.5, 5.2, 0.3), Color(0.24, 0.23, 0.22, 1), true)
+    _add_box_to(apartment, "FrontWallR", Vector3(4.1, 2.6, -5.35), Vector3(3.5, 5.2, 0.3), Color(0.24, 0.23, 0.22, 1), true)
+    _add_box_to(apartment, "Bed", Vector3(-3.2, 0.65, 2.6), Vector3(3.4, 1.0, 5.2), Color(0.17, 0.18, 0.20, 1), true)
+    _add_box_to(apartment, "Counter", Vector3(3.4, 0.85, 2.6), Vector3(3.0, 1.5, 1.2), Color(0.10, 0.10, 0.10, 1), true)
+    _add_box_to(apartment, "Sofa", Vector3(2.4, 0.75, -1.2), Vector3(4.0, 1.2, 1.8), Color(0.20, 0.19, 0.18, 1), true)
+
+    var label := Label3D.new()
+    label.text = "JACE'S APARTMENT"
+    label.position = Vector3(0, 4.1, -5.6)
+    label.font_size = 30
+    label.outline_size = 8
+    label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+    apartment.add_child(label)
+
 func _build_black_glass_garage() -> void:
     var garage := Node3D.new()
     garage.name = "BlackGlassGarage"
     garage.position = Vector3(-22, 0, 43)
     garage.add_to_group("black_glass_garage")
     add_child(garage)
-
     _add_box_to(garage, "GarageFloor", Vector3.ZERO, Vector3(15, 0.3, 18), Color(0.12, 0.12, 0.12, 1), true)
     _add_box_to(garage, "BackWall", Vector3(0, 3.0, 8.7), Vector3(15, 6, 0.5), Color(0.15, 0.15, 0.16, 1), true)
     _add_box_to(garage, "LeftWall", Vector3(-7.25, 3.0, 0), Vector3(0.5, 6, 18), Color(0.15, 0.15, 0.16, 1), true)
     _add_box_to(garage, "RightWall", Vector3(7.25, 3.0, 0), Vector3(0.5, 6, 18), Color(0.15, 0.15, 0.16, 1), true)
     _add_box_to(garage, "Roof", Vector3(0, 6.0, 0), Vector3(15, 0.35, 18), Color(0.08, 0.08, 0.09, 1), true)
-
     var label := Label3D.new()
     label.text = "OCEAN DRIVE PRIVATE GARAGE"
     label.position = Vector3(0, 4.7, -9.3)
@@ -73,11 +96,7 @@ func _build_street_furniture() -> void:
         _palm(Vector3(42.5, 0, z))
 
 func _spawn_pedestrians() -> void:
-    var positions := [
-        Vector3(-12.0, 1.0, -38.0), Vector3(-12.5, 1.0, -8.0), Vector3(-11.0, 1.0, 25.0),
-        Vector3(12.0, 1.0, -44.0), Vector3(12.5, 1.0, 5.0), Vector3(12.0, 1.0, 38.0),
-        Vector3(40.5, 1.0, -18.0), Vector3(40.5, 1.0, 24.0)
-    ]
+    var positions := [Vector3(-12.0, 1.0, -38.0), Vector3(-12.5, 1.0, -8.0), Vector3(-11.0, 1.0, 25.0), Vector3(12.0, 1.0, -44.0), Vector3(12.5, 1.0, 5.0), Vector3(12.0, 1.0, 38.0), Vector3(40.5, 1.0, -18.0), Vector3(40.5, 1.0, 24.0)]
     for position in positions:
         var pedestrian := PedestrianAgent.new()
         pedestrian.global_position = position
@@ -109,7 +128,6 @@ func _palm(position: Vector3) -> void:
     trunk.position = position + Vector3(0, 2.9, 0)
     trunk.material_override = _material(Color(0.24, 0.15, 0.08, 1), 0.9)
     add_child(trunk)
-
     for i in range(5):
         var leaf := MeshInstance3D.new()
         var leaf_mesh := BoxMesh.new()
@@ -135,11 +153,9 @@ func _add_box_to(parent_node: Node3D, node_name: String, position: Vector3, size
         body.add_child(collider)
     else:
         root = Node3D.new()
-
     root.name = node_name
     root.position = position
     parent_node.add_child(root)
-
     var mesh_instance := MeshInstance3D.new()
     var mesh := BoxMesh.new()
     mesh.size = size
