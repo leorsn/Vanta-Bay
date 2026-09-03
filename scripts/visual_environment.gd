@@ -1,6 +1,8 @@
 extends Node
 class_name VantaVisualEnvironment
 
+const SurfaceStyleScript = preload("res://scripts/surface_style_controller.gd")
+
 var world_environment: WorldEnvironment
 var environment: Environment
 var sky: Sky
@@ -70,3 +72,9 @@ func _build_environment() -> void:
     fill.light_energy = 0.20
     fill.shadow_enabled = false
     scene.add_child(fill)
+
+    if get_tree().get_first_node_in_group("surface_style_controller") == null:
+        var surfaces := SurfaceStyleScript.new()
+        surfaces.name = "SurfaceStyleController"
+        surfaces.add_to_group("surface_style_controller")
+        scene.add_child(surfaces)
