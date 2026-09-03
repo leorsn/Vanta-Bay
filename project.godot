@@ -4,6 +4,7 @@ run/main_scene="res://scenes/main.tscn"
 
 [autoload]
 StoryBootstrap="*res://scripts/story_bootstrap.gd"
+WorldTime="*res://scripts/world_time_manager.gd"
 
 [display]
 window/size/viewport_width=1920
