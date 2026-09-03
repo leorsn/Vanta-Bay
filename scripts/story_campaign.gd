@@ -16,20 +16,21 @@ const MISSIONS := [
     {"id": "overhead", "title": "OVERHEAD"}
 ]
 
-@export var prototype_start_index := 4
-var current_index := 4
+@export var new_game_start_index := 0
+var current_index := 0
 
 func _ready() -> void:
     add_to_group("story_campaign")
-    current_index = prototype_start_index
+    current_index = new_game_start_index
     call_deferred("_restore_campaign")
 
 func _restore_campaign() -> void:
     var saves := get_tree().get_first_node_in_group("story_save_manager") as StorySaveManager
     if saves != null:
-        current_index = int(saves.get_flag("campaign_index", prototype_start_index))
+        current_index = int(saves.get_flag("campaign_index", new_game_start_index))
         if saves.get_flag("black_glass_complete", false) and current_index <= 4:
             current_index = 5
+    current_index = clamp(current_index, 0, MISSIONS.size() - 1)
     _emit_current()
 
 func complete_current() -> void:
@@ -40,6 +41,18 @@ func complete_current() -> void:
         saves.set_flag("campaign_index", current_index)
         saves.autosave()
     _emit_current()
+
+func set_current_by_id(mission_id: String) -> bool:
+    for i in range(MISSIONS.size()):
+        if str(MISSIONS[i]["id"]) == mission_id:
+            current_index = i
+            var saves := get_tree().get_first_node_in_group("story_save_manager") as StorySaveManager
+            if saves != null:
+                saves.set_flag("campaign_index", current_index)
+                saves.autosave()
+            _emit_current()
+            return true
+    return false
 
 func get_current_id() -> String:
     return str(MISSIONS[current_index]["id"])
