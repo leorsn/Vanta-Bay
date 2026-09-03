@@ -57,6 +57,10 @@ func _bind_campaign() -> void:
 
 func _on_chapter_changed(mission_id: String, _title: String) -> void:
     active = mission_id == "first_run" and not completed
+    if active:
+        var saves := get_tree().get_first_node_in_group("story_save_manager") as StorySaveManager
+        if saves != null:
+            step = int(saves.get_flag("first_run_step", step))
     _refresh_hud()
 
 func notify_apartment_exited() -> void:
@@ -83,6 +87,7 @@ func deliver_package() -> void:
     var saves := get_tree().get_first_node_in_group("story_save_manager") as StorySaveManager
     if saves != null:
         saves.set_flag("first_run_complete", true)
+        saves.set_flag("first_run_step", step)
     var campaign := get_tree().get_first_node_in_group("story_campaign") as StoryCampaign
     if campaign != null and campaign.get_current_id() == "first_run":
         campaign.complete_current()
@@ -94,6 +99,7 @@ func deliver_package() -> void:
 func restore_step(value: int) -> void:
     step = clamp(value, 0, objectives.size() - 1)
     completed = step == objectives.size() - 1
+    active = not completed
     _refresh_hud()
 
 func get_objective() -> String:
@@ -102,6 +108,7 @@ func get_objective() -> String:
 func _checkpoint() -> void:
     var saves := get_tree().get_first_node_in_group("story_save_manager") as StorySaveManager
     if saves != null:
+        saves.set_flag("first_run_step", step)
         saves.autosave()
     _refresh_hud()
 
