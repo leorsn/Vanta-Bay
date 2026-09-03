@@ -135,7 +135,7 @@ position = Vector3(0, -0.5, 0)
 mesh = SubResource("GroundMesh")
 material_override = SubResource("GroundMaterial")
 [node name="Player" type="CharacterBody3D" parent="."]
-position = Vector3(0, 1.1, 4)
+position = Vector3(-49, 1.1, -47)
 script = ExtResource("1_player")
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Player"]
 shape = SubResource("PlayerShape")
