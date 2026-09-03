@@ -1,6 +1,8 @@
 extends CharacterBody3D
 class_name VantaPlayerController
 
+const HealthComponentScript = preload("res://scripts/health_component.gd")
+
 @export_category("Movement")
 @export var walk_speed: float = 4.2
 @export var sprint_speed: float = 7.4
@@ -29,11 +31,18 @@ var camera_pitch := deg_to_rad(-10.0)
 var driving := false
 var current_vehicle: Node = null
 var nearby_vehicle: VantaVehicleController = null
+var health_component: HealthComponent
 
 func _ready() -> void:
     add_to_group("player")
     Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
     prompt.visible = false
+    health_component = HealthComponentScript.new()
+    health_component.name = "Health"
+    health_component.max_health = 100.0
+    health_component.invulnerability_seconds = 0.25
+    add_child(health_component)
+    health_component.died.connect(_on_died)
 
 func _unhandled_input(event: InputEvent) -> void:
     if driving:
@@ -60,6 +69,26 @@ func _physics_process(delta: float) -> void:
 
     if Input.is_action_just_pressed("interact") and nearby_vehicle != null:
         nearby_vehicle.enter_vehicle(self)
+
+func apply_damage(amount: float, source: Node = null) -> void:
+    if health_component != null:
+        health_component.apply_damage(amount, source)
+
+func heal(amount: float) -> void:
+    if health_component != null:
+        health_component.heal(amount)
+
+func get_health_percent() -> float:
+    if health_component == null or health_component.max_health <= 0.0:
+        return 1.0
+    return health_component.health / health_component.max_health
+
+func _on_died(_source: Node) -> void:
+    var checkpoint := get_tree().get_first_node_in_group("mission_checkpoint_manager") as MissionCheckpointManager
+    if checkpoint != null:
+        checkpoint.restart_from_checkpoint()
+    if health_component != null:
+        health_component.reset_health()
 
 func _update_camera() -> void:
     camera_pivot.rotation = Vector3(camera_pitch, camera_yaw, 0.0)
