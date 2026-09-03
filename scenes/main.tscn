@@ -1,8 +1,13 @@
-[gd_scene load_steps=13 format=3]
+[gd_scene load_steps=19 format=3]
 
 [ext_resource path="res://scripts/player_controller.gd" type="Script" id="1_player"]
 [ext_resource path="res://scripts/vehicle_controller.gd" type="Script" id="2_vehicle"]
 [ext_resource path="res://scripts/prototype_world.gd" type="Script" id="3_world"]
+[ext_resource path="res://scripts/wanted_manager.gd" type="Script" id="4_wanted"]
+[ext_resource path="res://scripts/police_agent.gd" type="Script" id="5_police"]
+[ext_resource path="res://scripts/black_glass_mission.gd" type="Script" id="6_mission"]
+[ext_resource path="res://scripts/workshop_delivery_zone.gd" type="Script" id="7_workshop"]
+[ext_resource path="res://scripts/wanted_hud.gd" type="Script" id="8_wantedhud"]
 
 [sub_resource type="CapsuleShape3D" id="PlayerShape"]
 radius = 0.42
@@ -37,8 +42,49 @@ roughness = 0.2
 albedo_color = Color(0.86, 0.86, 0.84, 1)
 roughness = 0.65
 
+[sub_resource type="BoxShape3D" id="PoliceShape"]
+size = Vector3(2.0, 1.35, 4.6)
+
+[sub_resource type="BoxMesh" id="PoliceMesh"]
+size = Vector3(2.0, 1.35, 4.6)
+
+[sub_resource type="StandardMaterial3D" id="PoliceMaterial"]
+albedo_color = Color(0.04, 0.055, 0.075, 1)
+metallic = 0.55
+roughness = 0.3
+
+[sub_resource type="BoxShape3D" id="WorkshopZoneShape"]
+size = Vector3(10, 3, 10)
+
 [node name="VantaBay" type="Node3D"]
 script = ExtResource("3_world")
+
+[node name="WantedManager" type="Node" parent="."]
+script = ExtResource("4_wanted")
+
+[node name="BlackGlassMission" type="Node" parent="."]
+script = ExtResource("6_mission")
+
+[node name="MissionHUD" type="CanvasLayer" parent="BlackGlassMission"]
+
+[node name="Objective" type="Label" parent="BlackGlassMission/MissionHUD"]
+offset_left = 56.0
+offset_top = 58.0
+offset_right = 700.0
+offset_bottom = 150.0
+theme_override_font_sizes/font_size = 24
+text = "BLACK GLASS\nSTEAL THE VEHICLE"
+
+[node name="WantedHUD" type="CanvasLayer" parent="."]
+script = ExtResource("8_wantedhud")
+
+[node name="WantedLabel" type="Label" parent="WantedHUD"]
+offset_left = 1430.0
+offset_top = 55.0
+offset_right = 1840.0
+offset_bottom = 135.0
+theme_override_font_sizes/font_size = 26
+horizontal_alignment = 2
 
 [node name="Sun" type="DirectionalLight3D" parent="."]
 rotation_degrees = Vector3(-48, -32, 0)
@@ -115,9 +161,9 @@ fov = 72.0
 
 [node name="VehicleName" type="Label" parent="PrototypeVehicle/VehicleHUD"]
 offset_left = 60.0
-offset_top = 60.0
+offset_top = 170.0
 offset_right = 520.0
-offset_bottom = 100.0
+offset_bottom = 210.0
 theme_override_font_sizes/font_size = 22
 text = "Vellaro S1 Prototype"
 
@@ -138,3 +184,28 @@ offset_bottom = 980.0
 theme_override_font_sizes/font_size = 22
 text = "E  EXIT VEHICLE"
 horizontal_alignment = 1
+
+[node name="PoliceCruiser" type="CharacterBody3D" parent="."]
+position = Vector3(-5, 0.75, -42)
+script = ExtResource("5_police")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="PoliceCruiser"]
+shape = SubResource("PoliceShape")
+
+[node name="Body" type="MeshInstance3D" parent="PoliceCruiser"]
+mesh = SubResource("PoliceMesh")
+material_override = SubResource("PoliceMaterial")
+
+[node name="WorkshopDelivery" type="Area3D" parent="."]
+position = Vector3(-4, 1.5, 48)
+script = ExtResource("7_workshop")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="WorkshopDelivery"]
+shape = SubResource("WorkshopZoneShape")
+
+[node name="WorkshopMarker" type="Label3D" parent="WorkshopDelivery"]
+position = Vector3(0, 2.5, 0)
+text = "PORT VANTA WORKSHOP\nDELIVERY"
+font_size = 44
+outline_size = 8
+billboard = 1
