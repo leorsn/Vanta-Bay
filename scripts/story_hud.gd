@@ -37,16 +37,16 @@ func _build_ui() -> void:
 
     objective_label = Label.new()
     objective_label.position = Vector2(54, 82)
-    objective_label.size = Vector2(760, 80)
+    objective_label.size = Vector2(840, 92)
     objective_label.add_theme_font_size_override("font_size", 25)
     objective_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
     add_child(objective_label)
 
     hint_label = Label.new()
-    hint_label.position = Vector2(54, 158)
-    hint_label.size = Vector2(700, 32)
+    hint_label.position = Vector2(54, 170)
+    hint_label.size = Vector2(760, 32)
     hint_label.add_theme_font_size_override("font_size", 15)
-    hint_label.text = "R  RESTART FROM CHECKPOINT"
+    hint_label.text = "K  RESTART FROM CHECKPOINT"
     add_child(hint_label)
 
 func _bind_campaign() -> void:
@@ -72,10 +72,17 @@ func _refresh() -> void:
         visible = false
         return
     visible = true
+    if campaign.is_arc_complete():
+        title_label.text = "VANTA BAY  /  VERTICAL SLICE"
+        objective_label.text = "STORY ARC COMPLETE — TEST BUILD FINISHED"
+        hint_label.text = "SAVE COMPLETE  •  RESTART THE GAME TO VERIFY AUTO-RESUME"
+        hint_label.visible = true
+        return
     var mission_id := campaign.get_current_id()
     title_label.text = "STORY  /  " + campaign.get_current_title()
     objective_label.text = _objective_for(mission_id)
-    hint_label.visible = mission_id != "overhead" or objective_label.text != "ARC COMPLETE"
+    hint_label.text = "K  RESTART FROM CHECKPOINT"
+    hint_label.visible = true
 
 func _objective_for(mission_id: String) -> String:
     var group_name := str(GROUP_BY_ID.get(mission_id, ""))
