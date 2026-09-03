@@ -6,15 +6,19 @@ signal defeated(agent: Node)
 const HealthComponentScript = preload("res://scripts/health_component.gd")
 
 @export var move_speed := 4.6
+@export var strafe_speed := 3.6
 @export var engagement_range := 24.0
 @export var preferred_range := 13.0
 @export var fire_damage := 7.0
 @export var fire_interval := 1.0
 @export var max_health := 85.0
+@export var flank_distance := 8.0
 
 var target: Node3D
 var health_component: HealthComponent
 var _fire_cooldown := 0.0
+var _strafe_direction := 1.0
+var _strafe_timer := 0.0
 var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 
 func _ready() -> void:
@@ -24,10 +28,16 @@ func _ready() -> void:
     health_component.max_health = max_health
     add_child(health_component)
     health_component.died.connect(_on_died)
+    _strafe_direction = -1.0 if randf() < 0.5 else 1.0
+    _strafe_timer = randf_range(1.2, 2.8)
     call_deferred("_resolve_target")
 
 func _physics_process(delta: float) -> void:
     _fire_cooldown = max(_fire_cooldown - delta, 0.0)
+    _strafe_timer -= delta
+    if _strafe_timer <= 0.0:
+        _strafe_direction *= -1.0
+        _strafe_timer = randf_range(1.2, 2.8)
     if health_component != null and health_component.is_dead():
         velocity = Vector3.ZERO
         return
@@ -36,19 +46,31 @@ func _physics_process(delta: float) -> void:
         velocity = velocity.move_toward(Vector3.ZERO, move_speed * delta)
         move_and_slide()
         return
+
     var flat := target.global_position - global_position
     flat.y = 0.0
     var distance := flat.length()
-    if distance <= engagement_range and _has_line_of_sight(target):
+    var has_los := distance <= engagement_range and _has_line_of_sight(target)
+    if has_los:
         _try_fire(target)
-    if distance > preferred_range:
-        var direction := flat.normalized()
-        velocity.x = direction.x * move_speed
-        velocity.z = direction.z * move_speed
-        rotation.y = lerp_angle(rotation.y, atan2(direction.x, direction.z), 6.0 * delta)
+
+    var forward := flat.normalized() if flat.length_squared() > 0.01 else Vector3.FORWARD
+    var lateral := Vector3(-forward.z, 0.0, forward.x) * _strafe_direction
+    var desired := Vector3.ZERO
+
+    if not has_los:
+        desired = (forward + lateral * 0.65).normalized() * move_speed
+    elif distance > preferred_range + 3.0:
+        desired = (forward + lateral * 0.25).normalized() * move_speed
+    elif distance < preferred_range - 3.0:
+        desired = (-forward + lateral * 0.35).normalized() * move_speed
     else:
-        velocity.x = move_toward(velocity.x, 0.0, 8.0 * delta)
-        velocity.z = move_toward(velocity.z, 0.0, 8.0 * delta)
+        desired = lateral * strafe_speed
+
+    velocity.x = move_toward(velocity.x, desired.x, 10.0 * delta)
+    velocity.z = move_toward(velocity.z, desired.z, 10.0 * delta)
+    if flat.length_squared() > 0.01:
+        rotation.y = lerp_angle(rotation.y, atan2(forward.x, forward.z), 7.5 * delta)
     if not is_on_floor():
         velocity.y -= gravity * delta
     else:
