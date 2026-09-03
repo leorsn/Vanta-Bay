@@ -2,6 +2,7 @@ extends CanvasLayer
 class_name StoryHUD
 
 var campaign: StoryCampaign
+var panel: Panel
 var title_label: Label
 var objective_label: Label
 var hint_label: Label
@@ -29,25 +30,34 @@ func _process(_delta: float) -> void:
     _refresh()
 
 func _build_ui() -> void:
+    panel = Panel.new()
+    panel.position = Vector2(34, 34)
+    panel.size = Vector2(720, 150)
+    panel.modulate = Color(0.08, 0.09, 0.10, 0.72)
+    add_child(panel)
+
     title_label = Label.new()
-    title_label.position = Vector2(54, 52)
-    title_label.size = Vector2(660, 34)
-    title_label.add_theme_font_size_override("font_size", 18)
-    add_child(title_label)
+    title_label.position = Vector2(24, 18)
+    title_label.size = Vector2(660, 28)
+    title_label.add_theme_font_size_override("font_size", 15)
+    title_label.modulate = Color(0.72, 0.75, 0.76, 1.0)
+    panel.add_child(title_label)
 
     objective_label = Label.new()
-    objective_label.position = Vector2(54, 82)
-    objective_label.size = Vector2(840, 92)
-    objective_label.add_theme_font_size_override("font_size", 25)
+    objective_label.position = Vector2(24, 48)
+    objective_label.size = Vector2(660, 55)
+    objective_label.add_theme_font_size_override("font_size", 23)
     objective_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-    add_child(objective_label)
+    objective_label.modulate = Color(0.96, 0.96, 0.93, 1.0)
+    panel.add_child(objective_label)
 
     hint_label = Label.new()
-    hint_label.position = Vector2(54, 170)
-    hint_label.size = Vector2(760, 32)
-    hint_label.add_theme_font_size_override("font_size", 15)
+    hint_label.position = Vector2(24, 112)
+    hint_label.size = Vector2(660, 24)
+    hint_label.add_theme_font_size_override("font_size", 13)
+    hint_label.modulate = Color(0.56, 0.60, 0.62, 1.0)
     hint_label.text = "K  RESTART FROM CHECKPOINT"
-    add_child(hint_label)
+    panel.add_child(hint_label)
 
 func _bind_campaign() -> void:
     campaign = get_tree().get_first_node_in_group("story_campaign") as StoryCampaign
@@ -75,14 +85,12 @@ func _refresh() -> void:
     if campaign.is_arc_complete():
         title_label.text = "VANTA BAY  /  VERTICAL SLICE"
         objective_label.text = "STORY ARC COMPLETE — TEST BUILD FINISHED"
-        hint_label.text = "SAVE COMPLETE  •  RESTART THE GAME TO VERIFY AUTO-RESUME"
-        hint_label.visible = true
+        hint_label.text = "SAVE COMPLETE  •  AUTO-RESUME READY"
         return
     var mission_id := campaign.get_current_id()
     title_label.text = "STORY  /  " + campaign.get_current_title()
     objective_label.text = _objective_for(mission_id)
     hint_label.text = "K  RESTART FROM CHECKPOINT"
-    hint_label.visible = true
 
 func _objective_for(mission_id: String) -> String:
     var group_name := str(GROUP_BY_ID.get(mission_id, ""))
