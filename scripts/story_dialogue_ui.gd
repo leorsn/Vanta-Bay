@@ -9,6 +9,7 @@ var speaker_label: Label
 var body_label: Label
 var option_labels: Array[Label] = []
 var active := false
+var accepting_choices := false
 var selected_index := 0
 
 func _ready() -> void:
@@ -20,18 +21,20 @@ func _ready() -> void:
 func _unhandled_input(event: InputEvent) -> void:
     if not active:
         return
-    if event.is_action_pressed("move_left") or event.is_action_pressed("move_forward"):
+    if accepting_choices and (event.is_action_pressed("move_left") or event.is_action_pressed("move_forward")):
         _move_selection(-1)
         get_viewport().set_input_as_handled()
-    elif event.is_action_pressed("move_right") or event.is_action_pressed("move_back"):
+    elif accepting_choices and (event.is_action_pressed("move_right") or event.is_action_pressed("move_back")):
         _move_selection(1)
         get_viewport().set_input_as_handled()
-    elif event.is_action_pressed("interact"):
+    elif accepting_choices and event.is_action_pressed("interact"):
+        accepting_choices = false
         choice_selected.emit(selected_index)
         get_viewport().set_input_as_handled()
 
 func show_choices(speaker: String, body: String, choices: Array[String]) -> void:
     active = true
+    accepting_choices = true
     visible = true
     selected_index = 0
     speaker_label.text = speaker
@@ -45,6 +48,7 @@ func show_choices(speaker: String, body: String, choices: Array[String]) -> void
 
 func show_line(speaker: String, body: String) -> void:
     active = true
+    accepting_choices = false
     visible = true
     speaker_label.text = speaker
     body_label.text = body
@@ -53,6 +57,7 @@ func show_line(speaker: String, body: String) -> void:
 
 func close_dialogue() -> void:
     active = false
+    accepting_choices = false
     visible = false
     dialogue_closed.emit()
 
