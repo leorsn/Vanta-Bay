@@ -20,12 +20,17 @@ class_name VantaVehicleController
 @onready var interaction_label: Label = $VehicleHUD/Interaction
 @onready var speed_label: Label = $VehicleHUD/Speed
 @onready var name_label: Label = $VehicleHUD/VehicleName
+@onready var body_mesh: MeshInstance3D = $Body
 
 var driver: VantaPlayerController
 var speed_mps := 0.0
 var steering_input := 0.0
 var throttle_input := 0.0
 var theft_registered := false
+var repaint_complete := false
+var plates_changed := false
+var identity_heat_cleared := false
+var plate_code := "VB 271"
 
 func _ready() -> void:
     add_to_group("vehicles")
@@ -119,6 +124,29 @@ func exit_vehicle() -> void:
     _set_hud_visible(false)
     exiting_driver.global_position = global_position + global_transform.basis * exit_offset
     exiting_driver.set_driving_state(false, null)
+
+func repaint_vehicle() -> void:
+    repaint_complete = true
+    if body_mesh == null:
+        return
+    var material := StandardMaterial3D.new()
+    material.albedo_color = Color(0.055, 0.065, 0.075, 1.0)
+    material.metallic = 0.86
+    material.roughness = 0.18
+    body_mesh.material_override = material
+
+func change_plates() -> void:
+    plates_changed = true
+    plate_code = "VB 904"
+
+func clear_identity_heat() -> void:
+    identity_heat_cleared = repaint_complete and plates_changed
+    if identity_heat_cleared:
+        theft_registered = false
+        mission_target_vehicle = false
+
+func is_identity_clean() -> bool:
+    return repaint_complete and plates_changed and identity_heat_cleared
 
 func get_speed_kph() -> float:
     return abs(speed_mps) * 3.6
