@@ -13,8 +13,12 @@ const HealthComponentScript = preload("res://scripts/health_component.gd")
 
 @export_category("Camera")
 @export var mouse_sensitivity: float = 0.0025
+@export var aim_mouse_sensitivity: float = 0.0017
 @export var min_pitch: float = deg_to_rad(-55.0)
 @export var max_pitch: float = deg_to_rad(65.0)
+@export var normal_fov := 70.0
+@export var aim_fov := 56.0
+@export var fov_lerp_speed := 10.0
 
 @export_category("Interaction")
 @export var vehicle_interaction_radius: float = 3.2
@@ -32,6 +36,7 @@ var driving := false
 var current_vehicle: Node = null
 var nearby_vehicle: VantaVehicleController = null
 var health_component: HealthComponent
+var aiming := false
 
 func _ready() -> void:
     add_to_group("player")
@@ -48,8 +53,9 @@ func _unhandled_input(event: InputEvent) -> void:
     if driving:
         return
     if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
-        camera_yaw -= event.relative.x * mouse_sensitivity
-        camera_pitch = clamp(camera_pitch - event.relative.y * mouse_sensitivity, min_pitch, max_pitch)
+        var sensitivity := aim_mouse_sensitivity if aiming else mouse_sensitivity
+        camera_yaw -= event.relative.x * sensitivity
+        camera_pitch = clamp(camera_pitch - event.relative.y * sensitivity, min_pitch, max_pitch)
     elif event.is_action_pressed("ui_cancel"):
         Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
     elif event is InputEventMouseButton and event.pressed:
@@ -57,10 +63,12 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _physics_process(delta: float) -> void:
     if driving:
+        aiming = false
         velocity = Vector3.ZERO
         return
 
-    _update_camera()
+    aiming = Input.is_action_pressed("aim")
+    _update_camera(delta)
     _apply_gravity(delta)
     _handle_jump()
     _handle_movement(delta)
@@ -83,6 +91,10 @@ func get_health_percent() -> float:
         return 1.0
     return health_component.health / health_component.max_health
 
+func add_recoil(pitch_amount: float, yaw_amount: float) -> void:
+    camera_pitch = clamp(camera_pitch - pitch_amount, min_pitch, max_pitch)
+    camera_yaw += yaw_amount
+
 func _on_died(_source: Node) -> void:
     var checkpoint := get_tree().get_first_node_in_group("mission_checkpoint_manager") as MissionCheckpointManager
     if checkpoint != null:
@@ -90,8 +102,10 @@ func _on_died(_source: Node) -> void:
     if health_component != null:
         health_component.reset_health()
 
-func _update_camera() -> void:
+func _update_camera(delta: float) -> void:
     camera_pivot.rotation = Vector3(camera_pitch, camera_yaw, 0.0)
+    var target_fov := aim_fov if aiming else normal_fov
+    player_camera.fov = lerp(player_camera.fov, target_fov, clamp(fov_lerp_speed * delta, 0.0, 1.0))
 
 func _apply_gravity(delta: float) -> void:
     if not is_on_floor():
@@ -105,14 +119,16 @@ func _handle_movement(delta: float) -> void:
     var input := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
     var basis := Basis(Vector3.UP, camera_yaw)
     var direction := (basis * Vector3(input.x, 0.0, input.y)).normalized()
-    var target_speed := sprint_speed if Input.is_action_pressed("sprint") else walk_speed
+    var target_speed := sprint_speed if Input.is_action_pressed("sprint") and not aiming else walk_speed
     var target_velocity := direction * target_speed
     var rate := acceleration if direction != Vector3.ZERO else deceleration
 
     velocity.x = move_toward(velocity.x, target_velocity.x, rate * delta)
     velocity.z = move_toward(velocity.z, target_velocity.z, rate * delta)
 
-    if direction != Vector3.ZERO:
+    if aiming:
+        rotation.y = lerp_angle(rotation.y, camera_yaw, rotation_speed * delta)
+    elif direction != Vector3.ZERO:
         var target_angle := atan2(direction.x, direction.z)
         rotation.y = lerp_angle(rotation.y, target_angle, rotation_speed * delta)
 
