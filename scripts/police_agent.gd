@@ -1,6 +1,8 @@
 extends CharacterBody3D
 class_name VantaPoliceAgent
 
+const HealthComponentScript = preload("res://scripts/health_component.gd")
+
 @export var patrol_speed := 6.0
 @export var pursuit_speed := 13.0
 @export var turn_speed := 3.4
@@ -10,13 +12,22 @@ class_name VantaPoliceAgent
 
 var wanted: WantedManager
 var search_offset := Vector3.ZERO
+var health_component: HealthComponent
 
 func _ready() -> void:
     add_to_group("police")
     wanted = get_tree().get_first_node_in_group("wanted_manager") as WantedManager
     search_offset = _make_search_offset(unit_index)
+    health_component = HealthComponentScript.new()
+    health_component.name = "Health"
+    health_component.max_health = 120.0
+    add_child(health_component)
+    health_component.died.connect(_on_died)
 
 func _physics_process(delta: float) -> void:
+    if health_component != null and health_component.is_dead():
+        velocity = Vector3.ZERO
+        return
     if wanted == null or wanted.state == "NONE" or wanted.state == "ESCAPED" or not _is_unit_active():
         velocity = velocity.move_toward(Vector3.ZERO, patrol_speed * delta)
         move_and_slide()
@@ -49,6 +60,18 @@ func _physics_process(delta: float) -> void:
     else:
         velocity.y = -0.2
     move_and_slide()
+
+func apply_damage(amount: float, source: Node = null) -> void:
+    if health_component == null:
+        return
+    if health_component.apply_damage(amount, source) and source is Node3D and wanted != null:
+        wanted.report_crime((source as Node3D).global_position, 4, source as Node3D)
+
+func _on_died(source: Node) -> void:
+    set_physics_process(false)
+    velocity = Vector3.ZERO
+    if source is Node3D and wanted != null:
+        wanted.report_crime((source as Node3D).global_position, 5, source as Node3D)
 
 func _is_unit_active() -> bool:
     if wanted == null:
