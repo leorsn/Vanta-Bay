@@ -50,7 +50,7 @@ func _ready() -> void:
     health_component.died.connect(_on_died)
 
 func _unhandled_input(event: InputEvent) -> void:
-    if driving:
+    if driving or _dialogue_active():
         return
     if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
         var sensitivity := aim_mouse_sensitivity if aiming else mouse_sensitivity
@@ -65,6 +65,14 @@ func _physics_process(delta: float) -> void:
     if driving:
         aiming = false
         velocity = Vector3.ZERO
+        return
+    if _dialogue_active():
+        aiming = false
+        velocity.x = move_toward(velocity.x, 0.0, deceleration * delta)
+        velocity.z = move_toward(velocity.z, 0.0, deceleration * delta)
+        _apply_gravity(delta)
+        move_and_slide()
+        prompt.visible = false
         return
 
     aiming = Input.is_action_pressed("aim")
@@ -158,3 +166,7 @@ func set_driving_state(value: bool, vehicle: Node) -> void:
     else:
         player_camera.current = true
         camera_yaw = rotation.y
+
+func _dialogue_active() -> bool:
+    var dialogue := get_tree().get_first_node_in_group("story_dialogue_ui") as StoryDialogueUI
+    return dialogue != null and dialogue.active
