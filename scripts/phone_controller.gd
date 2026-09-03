@@ -19,7 +19,12 @@ var current_mission_id := ""
 
 func _ready() -> void:
     add_to_group("phone_controller")
+    layer = 30
     panel.visible = false
+    panel.modulate = Color(0.055, 0.06, 0.07, 0.96)
+    header.modulate = Color(0.95, 0.96, 0.94, 1.0)
+    content.modulate = Color(0.78, 0.80, 0.79, 1.0)
+    balance.modulate = Color(0.66, 0.70, 0.69, 1.0)
     economy = get_tree().get_first_node_in_group("economy_manager") as EconomyManager
     if economy != null:
         economy.balances_changed.connect(_on_balances_changed)
@@ -58,30 +63,30 @@ func _unhandled_input(event: InputEvent) -> void:
 func show_black_glass_followup() -> void:
     followup_pending = true
     followup_read = false
-    header.text = "VANTA OS  /  SECURE MESSAGE"
-    content.text = "UNKNOWN DEVICE DETECTED\nEncrypted storage module recovered from the vehicle.\n\nMATEO\nDo not plug that thing into anything.\nBring it when I call.\nAnd Jace... nobody was supposed to know about that car."
+    header.text = "VANTA OS  /  SECURE"
+    content.text = "UNKNOWN DEVICE DETECTED\n\nEncrypted storage module recovered from the vehicle.\n\nMATEO\nDo not plug that thing into anything.\nBring it when I call.\nAnd Jace... nobody was supposed to know about that car."
 
 func restore_initial_message() -> void:
     followup_pending = false
     followup_read = false
     header.text = "VANTA OS  /  MESSAGES"
-    content.text = "MATEO\nGot something for you.\nGarage off Ocean Drive.\nBring the car to Port Vanta.\nNo questions."
+    content.text = "MATEO\n\nGot something for you.\nGarage off Ocean Drive.\nBring the car to Port Vanta.\nNo questions."
 
 func _show_default_screen() -> void:
     header.text = "VANTA OS  /  HOME"
     match current_mission_id:
         "first_run":
-            content.text = "JACE MERCER\nNo new messages.\n\nCurrent job: FIRST RUN\nMeet Mateo and make the delivery."
+            content.text = "JACE MERCER\n\nNo new messages.\n\nCURRENT JOB\nFIRST RUN\nMeet Mateo and make the delivery."
         "no_questions":
-            content.text = "MATEO\nYou did fine. Keep your phone close. I've got another run."
+            content.text = "MATEO\n\nYou did fine. Keep your phone close. I've got another run."
         "after_midnight":
-            content.text = "VANTA OS\nCurrent job: AFTER MIDNIGHT"
+            content.text = "CURRENT JOB\nAFTER MIDNIGHT"
         "wrong_place":
-            content.text = "VANTA OS\nCurrent job: WRONG PLACE"
+            content.text = "CURRENT JOB\nWRONG PLACE"
         "lose_them":
-            content.text = "MATEO\nGet home. Stay off the main roads."
+            content.text = "MATEO\n\nGet home. Stay off the main roads."
         _:
-            content.text = "VANTA OS\nMessages  •  Map  •  Bank  •  Contacts"
+            content.text = "MESSAGES\nMAP\nBANK\nCONTACTS"
 
 func _on_balances_changed(cash: int, bank: int, rep: int) -> void:
-    balance.text = "CASH  $%d\nBANK  $%d\nREP   %d" % [cash, bank, rep]
+    balance.text = "CASH   $%d\nBANK   $%d\nREP    %d" % [cash, bank, rep]
