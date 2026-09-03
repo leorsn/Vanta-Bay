@@ -33,6 +33,7 @@ const VehicleLightingControllerScript = preload("res://scripts/vehicle_lighting_
 const AmbientLifeControllerScript = preload("res://scripts/ambient_life_controller.gd")
 const FacadeWindowControllerScript = preload("res://scripts/facade_window_controller.gd")
 const AmbientMotionControllerScript = preload("res://scripts/ambient_motion_controller.gd")
+const StartupSafetyControllerScript = preload("res://scripts/startup_safety_controller.gd")
 
 func _ready() -> void:
     get_tree().node_added.connect(_on_node_added)
@@ -178,3 +179,7 @@ func _ensure_story_runtime() -> void:
         var ambient_motion := AmbientMotionControllerScript.new()
         ambient_motion.name = "AmbientMotionController"
         root.add_child(ambient_motion)
+    if get_tree().get_first_node_in_group("startup_safety_controller") == null:
+        var startup_safety := StartupSafetyControllerScript.new()
+        startup_safety.name = "StartupSafetyController"
+        root.add_child(startup_safety)
