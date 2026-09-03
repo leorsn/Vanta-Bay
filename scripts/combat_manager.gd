@@ -5,6 +5,8 @@ signal ammo_changed(current: int, reserve: int)
 signal reloading_changed(active: bool)
 signal weapon_changed(name: String)
 signal hit_confirmed(headshot: bool)
+signal shot_fired(origin: Vector3, direction: Vector3)
+signal impact_created(position: Vector3, normal: Vector3, hit_damageable: bool)
 
 var player: VantaPlayerController
 var inventory: WeaponInventory
@@ -47,6 +49,7 @@ func fire() -> void:
     _apply_recoil()
     var origin := camera.global_position
     var direction := -camera.global_transform.basis.z
+    shot_fired.emit(origin, direction)
     var end := origin + direction * float(_weapon.get("range", 85.0))
     var query := PhysicsRayQueryParameters3D.create(origin, end)
     query.exclude = [player]
@@ -56,9 +59,12 @@ func fire() -> void:
     if hit.is_empty():
         return
     var collider = hit.get("collider")
+    var impact_position: Vector3 = hit.get("position", end)
+    var impact_normal: Vector3 = hit.get("normal", Vector3.UP)
+    var hit_damageable := false
     if collider is Node:
-        var impact_position: Vector3 = hit.get("position", Vector3.ZERO)
-        _apply_hit(collider as Node, impact_position)
+        hit_damageable = _apply_hit(collider as Node, impact_position)
+    impact_created.emit(impact_position, impact_normal, hit_damageable)
 
 func reload_weapon() -> void:
     if _weapon.is_empty():
@@ -78,7 +84,7 @@ func reload_weapon() -> void:
     reloading_changed.emit(false)
     _emit_ammo()
 
-func _apply_hit(node: Node, impact_position: Vector3) -> void:
+func _apply_hit(node: Node, impact_position: Vector3) -> bool:
     var damage_target: Node = node
     while damage_target != null:
         if damage_target.has_method("apply_damage"):
@@ -87,8 +93,9 @@ func _apply_hit(node: Node, impact_position: Vector3) -> void:
             damage_target.call("apply_damage", base_damage * multiplier, player)
             _report_weapon_crime(damage_target)
             hit_confirmed.emit(multiplier >= 1.9)
-            return
+            return true
         damage_target = damage_target.get_parent()
+    return false
 
 func _damage_multiplier(target: Node, impact_position: Vector3) -> float:
     if target is Node3D:
