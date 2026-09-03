@@ -17,6 +17,7 @@ const WeaponInventoryScript = preload("res://scripts/weapon_inventory.gd")
 const CombatManagerScript = preload("res://scripts/combat_manager.gd")
 const CombatHUDScript = preload("res://scripts/combat_hud.gd")
 const WeaponVisualControllerScript = preload("res://scripts/weapon_visual_controller.gd")
+const CombatVFXControllerScript = preload("res://scripts/combat_vfx_controller.gd")
 const StoryCombatDirectorScript = preload("res://scripts/story_combat_director.gd")
 const StoryRelationshipManagerScript = preload("res://scripts/story_relationship_manager.gd")
 const StoryDialogueUIScript = preload("res://scripts/story_dialogue_ui.gd")
@@ -123,6 +124,10 @@ func _ensure_story_runtime() -> void:
         var weapon_visuals := WeaponVisualControllerScript.new()
         weapon_visuals.name = "WeaponVisualController"
         root.add_child(weapon_visuals)
+    if get_tree().get_first_node_in_group("combat_vfx_controller") == null:
+        var combat_vfx := CombatVFXControllerScript.new()
+        combat_vfx.name = "CombatVFXController"
+        root.add_child(combat_vfx)
     if get_tree().get_first_node_in_group("story_combat_director") == null:
         var combat_director := StoryCombatDirectorScript.new()
         combat_director.name = "StoryCombatDirector"
