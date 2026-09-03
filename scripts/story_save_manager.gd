@@ -4,14 +4,22 @@ class_name StorySaveManager
 signal save_completed(slot: int)
 signal load_completed(slot: int)
 
-const SAVE_VERSION := 2
+const SAVE_VERSION := 3
 const SLOT_COUNT := 3
 
 @export var active_slot := 1
+@export var auto_resume := true
 var story_flags: Dictionary = {}
 
 func _ready() -> void:
     add_to_group("story_save_manager")
+    if auto_resume:
+        call_deferred("_autoload_active_slot")
+
+func _autoload_active_slot() -> void:
+    await get_tree().process_frame
+    if has_story_save(active_slot):
+        load_story(active_slot)
 
 func save_story(slot: int = active_slot) -> bool:
     slot = clamp(slot, 1, SLOT_COUNT)
@@ -69,7 +77,7 @@ func load_story(slot: int = active_slot) -> bool:
     var legacy_black_glass := int(parsed.get("black_glass_objective", 0))
     var first_run := get_tree().get_first_node_in_group("first_run_mission") as FirstRunMission
     if first_run != null:
-        first_run.restore_step(int(missions.get("first_run_step", 0)))
+        first_run.restore_step(int(missions.get("first_run_step", story_flags.get("first_run_step", 0))))
     var black_glass := get_tree().get_first_node_in_group("black_glass_mission") as BlackGlassMission
     if black_glass != null:
         black_glass.restore_objective(int(missions.get("black_glass_objective", legacy_black_glass)))
@@ -92,6 +100,12 @@ func get_flag(key: String, fallback = false):
 
 func has_story_save(slot: int = active_slot) -> bool:
     return FileAccess.file_exists(_slot_path(clamp(slot, 1, SLOT_COUNT)))
+
+func delete_story_save(slot: int = active_slot) -> bool:
+    var path := _slot_path(clamp(slot, 1, SLOT_COUNT))
+    if not FileAccess.file_exists(path):
+        return true
+    return DirAccess.remove_absolute(ProjectSettings.globalize_path(path)) == OK
 
 func _slot_path(slot: int) -> String:
     return "user://story_slot_%d.json" % slot
