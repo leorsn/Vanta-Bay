@@ -14,7 +14,7 @@ var selected_index := 0
 
 func _ready() -> void:
     add_to_group("story_dialogue_ui")
-    layer = 20
+    layer = 40
     _build_ui()
     visible = false
 
@@ -74,32 +74,35 @@ func _move_selection(direction: int) -> void:
 func _refresh_selection() -> void:
     for i in range(option_labels.size()):
         if option_labels[i].visible:
-            option_labels[i].modulate = Color(1, 1, 1, 1) if i == selected_index else Color(0.62, 0.62, 0.62, 1)
+            option_labels[i].modulate = Color(1.0, 1.0, 0.97, 1.0) if i == selected_index else Color(0.52, 0.55, 0.56, 1.0)
 
 func _build_ui() -> void:
     panel = Panel.new()
-    panel.position = Vector2(310, 690)
-    panel.size = Vector2(1300, 300)
+    panel.position = Vector2(260, 710)
+    panel.size = Vector2(1400, 250)
+    panel.modulate = Color(0.045, 0.05, 0.055, 0.95)
     add_child(panel)
 
     speaker_label = Label.new()
-    speaker_label.position = Vector2(42, 28)
-    speaker_label.size = Vector2(500, 42)
-    speaker_label.add_theme_font_size_override("font_size", 26)
+    speaker_label.position = Vector2(46, 24)
+    speaker_label.size = Vector2(500, 34)
+    speaker_label.add_theme_font_size_override("font_size", 20)
+    speaker_label.modulate = Color(0.70, 0.74, 0.75, 1.0)
     panel.add_child(speaker_label)
 
     body_label = Label.new()
-    body_label.position = Vector2(42, 78)
-    body_label.size = Vector2(1210, 82)
+    body_label.position = Vector2(46, 62)
+    body_label.size = Vector2(1305, 72)
     body_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-    body_label.add_theme_font_size_override("font_size", 21)
+    body_label.add_theme_font_size_override("font_size", 20)
+    body_label.modulate = Color(0.96, 0.96, 0.93, 1.0)
     panel.add_child(body_label)
 
     for i in range(3):
         var option := Label.new()
-        option.position = Vector2(42 + i * 410, 185)
-        option.size = Vector2(380, 70)
+        option.position = Vector2(46 + i * 440, 158)
+        option.size = Vector2(410, 62)
         option.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-        option.add_theme_font_size_override("font_size", 19)
+        option.add_theme_font_size_override("font_size", 17)
         panel.add_child(option)
         option_labels.append(option)
