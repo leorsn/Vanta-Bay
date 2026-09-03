@@ -1,5 +1,8 @@
 extends Node3D
 
+const PedestrianAgent = preload("res://scripts/pedestrian_agent.gd")
+const TrafficAgent = preload("res://scripts/traffic_agent.gd")
+
 var asphalt := Color(0.055, 0.06, 0.065, 1.0)
 var concrete := Color(0.34, 0.35, 0.34, 1.0)
 var sand := Color(0.58, 0.50, 0.37, 1.0)
@@ -10,6 +13,8 @@ func _ready() -> void:
     _build_blocks()
     _build_beach_edge()
     _build_street_furniture()
+    _spawn_pedestrians()
+    _spawn_traffic()
 
 func _build_roads() -> void:
     _add_box("OceanDrive", Vector3(0, 0.015, 0), Vector3(18, 0.03, 120), asphalt, false)
@@ -29,11 +34,10 @@ func _build_blocks() -> void:
     _building(Vector3(29, 6.0, 36), Vector3(21, 12, 22), Color(0.26, 0.24, 0.21, 1))
 
 func _building(position: Vector3, size: Vector3, color: Color) -> void:
-    var building := _add_box("Building", position, size, color, true)
+    _add_box("Building", position, size, color, true)
     for level in range(2, int(size.y) - 1, 3):
-        var window_height := 1.15
         var front_z := position.z - size.z * 0.5 - 0.015
-        _add_box("WindowBand", Vector3(position.x, float(level), front_z), Vector3(size.x * 0.72, window_height, 0.03), glass, false)
+        _add_box("WindowBand", Vector3(position.x, float(level), front_z), Vector3(size.x * 0.72, 1.15, 0.03), glass, false)
 
 func _build_beach_edge() -> void:
     _add_box("Beach", Vector3(51, 0.03, 20), Vector3(18, 0.06, 80), sand, false)
@@ -45,6 +49,28 @@ func _build_street_furniture() -> void:
         _lamp(Vector3(-14.7, 0, float(z + 8)))
     for z in [-42.0, -12.0, 18.0, 46.0]:
         _palm(Vector3(42.5, 0, z))
+
+func _spawn_pedestrians() -> void:
+    var positions := [
+        Vector3(-12.0, 1.0, -38.0), Vector3(-12.5, 1.0, -8.0), Vector3(-11.0, 1.0, 25.0),
+        Vector3(12.0, 1.0, -44.0), Vector3(12.5, 1.0, 5.0), Vector3(12.0, 1.0, 38.0),
+        Vector3(40.5, 1.0, -18.0), Vector3(40.5, 1.0, 24.0)
+    ]
+    for position in positions:
+        var pedestrian := PedestrianAgent.new()
+        pedestrian.global_position = position
+        pedestrian.roam_radius = 7.0
+        add_child(pedestrian)
+
+func _spawn_traffic() -> void:
+    var starts := [-48.0, -18.0, 15.0, 44.0]
+    for i in range(starts.size()):
+        var car := TrafficAgent.new()
+        car.northbound = i % 2 == 0
+        car.lane_x = 3.8 if car.northbound else -3.8
+        car.global_position = Vector3(car.lane_x, 0.75, starts[i])
+        car.cruise_speed_kph = 34.0 + float(i) * 4.0
+        add_child(car)
 
 func _lamp(position: Vector3) -> void:
     _add_box("LampPost", position + Vector3(0, 2.5, 0), Vector3(0.16, 5.0, 0.16), Color(0.08, 0.08, 0.08, 1), false)
